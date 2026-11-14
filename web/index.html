@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case File · Earned Trust</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f6f3ec; --card:#fffdf8; --ink:#1d1b17; --muted:#6b665c; --rule:#ddd6c8;
+  --proven:#2f7a4f; --proven-bg:#e3f1e8;
+  --supported:#2d6a8f; --supported-bg:#e2eef5;
+  --contested:#b4541a; --contested-bg:#fbeadf;
+  --refused:#6b3fa0; --refused-bg:#efe6f8;
+  --weak:#8a6d00; --weak-bg:#f7f0d4;
+  --unchecked:#6b665c; --unchecked-bg:#ece8df;
+  --accent:#1d1b17;
+}
+@media (prefers-color-scheme: dark){:root{
+  --paper:#16150f; --card:#1f1d17; --ink:#ece7da; --muted:#a39d8f; --rule:#37332a;
+  --proven:#7fcf9c; --proven-bg:#1c3125; --supported:#8cc3e6; --supported-bg:#1a2b36;
+  --contested:#f0a06c; --contested-bg:#3a2417; --refused:#c7a5ef; --refused-bg:#2b2238;
+  --weak:#e2c45a; --weak-bg:#332c12; --unchecked:#a39d8f; --unchecked-bg:#2a2720; --accent:#ece7da;
+}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+code,.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.86em}
+.wrap{max-width:1040px;margin:0 auto;padding:0 20px}
+header.top{border-bottom:1px solid var(--rule);font-size:13px;color:var(--muted)}
+header.top .wrap{display:flex;gap:18px;flex-wrap:wrap;justify-content:space-between;padding-block:12px}
+header.top b{color:var(--ink);letter-spacing:.08em;text-transform:uppercase;font-size:12px}
+h1,h2{font-family:Fraunces,Georgia,serif;font-weight:700;letter-spacing:-.01em}
+h1{font-size:clamp(28px,4.4vw,44px);line-height:1.08;margin:34px 0 10px;overflow-wrap:anywhere}
+h2{font-size:24px;margin:0 0 4px}
+.lede{color:var(--muted);max-width:68ch;margin:0 0 6px}
+section{padding:34px 0;border-bottom:1px solid var(--rule)}
+.sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.sec-num{font-family:"IBM Plex Mono";color:var(--muted);font-size:13px}
+.sub{color:var(--muted);font-size:14px;margin:0 0 18px;max-width:72ch}
+
+.req{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--ink);padding:16px 18px;margin:20px 0;border-radius:4px}
+.req .id{font-family:"IBM Plex Mono";font-weight:500;font-size:13px}
+.req blockquote{margin:8px 0 10px;font-family:Fraunces,Georgia,serif;font-size:18px;line-height:1.4}
+.req ul{margin:0;padding-left:0;list-style:none;font-size:14px}
+.req li{padding:3px 0}.req li code{margin-right:8px;color:var(--muted)}
+
+.funnel{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:26px 0 8px}
+.fstep{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:14px 14px 12px;position:relative}
+.fstep .n{font-family:Fraunces,Georgia,serif;font-size:40px;font-weight:700;line-height:1}
+.fstep .l{font-size:13px;color:var(--muted);margin-top:6px}
+.fstep.you{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.fstep.you .l{color:var(--paper);opacity:.8}
+.bar{display:flex;height:10px;border-radius:5px;overflow:hidden;margin:14px 0 4px;border:1px solid var(--rule)}
+.bar span{display:block}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.chip{display:inline-block;font:500 11px/1 "IBM Plex Mono";text-transform:uppercase;letter-spacing:.06em;padding:5px 7px;border-radius:3px;white-space:nowrap}
+.s-proven{color:var(--proven);background:var(--proven-bg)}
+.s-supported{color:var(--supported);background:var(--supported-bg)}
+.s-contested,.s-false{color:var(--contested);background:var(--contested-bg)}
+.s-refused,.s-unstated{color:var(--refused);background:var(--refused-bg)}
+.s-weak-evidence,.s-misleading,.s-partly-true{color:var(--weak);background:var(--weak-bg)}
+.s-unchecked{color:var(--unchecked);background:var(--unchecked-bg)}
+
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:500;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-bottom:1px solid var(--rule)}
+td{padding:11px 10px;border-bottom:1px solid var(--rule);vertical-align:top}
+td.q{font-family:Fraunces,Georgia,serif;font-size:16px}
+.tbl{background:var(--card);border:1px solid var(--rule);border-radius:6px;overflow-x:auto}
+
+.card{background:var(--card);border:1px solid var(--rule);border-radius:6px;margin:0 0 16px;overflow:hidden}
+.card .hd{display:flex;gap:10px;align-items:center;padding:14px 18px 0;flex-wrap:wrap}
+.card .hd .fid{font-family:"IBM Plex Mono";color:var(--muted);font-size:13px}
+.card .hd .rq{margin-left:auto;font-family:"IBM Plex Mono";font-size:12px;color:var(--muted)}
+.card h3{font-family:Fraunces,Georgia,serif;font-size:20px;margin:8px 18px 6px;line-height:1.25}
+.card p{margin:0 18px 12px;max-width:80ch}
+.ev{margin:0 18px 12px;border-top:1px dashed var(--rule)}
+.ev-row{display:grid;grid-template-columns:86px 1fr;gap:10px;padding:9px 0;border-bottom:1px dashed var(--rule);font-size:13.5px}
+.ev-row:last-child{border-bottom:0}
+.ev-kind{font:500 10.5px/1.9 "IBM Plex Mono";text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+.ev-kind.machine::before{content:"■ ";color:var(--proven)}
+.ev-kind.diff::before{content:"■ ";color:var(--supported)}
+.ev-res{font-family:"IBM Plex Mono";font-size:12.5px;word-break:break-word}
+.rerun{display:flex;gap:8px;align-items:flex-start;margin-top:5px}
+.rerun code{flex:1;background:var(--paper);border:1px solid var(--rule);padding:5px 7px;border-radius:3px;font-size:11.5px;white-space:pre-wrap;word-break:break-all;color:var(--muted)}
+.rerun button{font:11px "IBM Plex Mono";border:1px solid var(--rule);background:var(--card);color:var(--ink);padding:5px 7px;border-radius:3px;cursor:pointer}
+.note{margin:0 18px 12px;padding:10px 12px;border-radius:4px;font-size:13.5px;background:var(--paper)}
+.note b{font-weight:600}
+.ask{background:var(--ink);color:var(--paper);padding:14px 18px;margin-top:4px}
+.ask .qq{font-family:Fraunces,Georgia,serif;font-size:17px;margin-bottom:10px}
+.ask label{display:inline-flex;gap:6px;align-items:center;margin:0 16px 6px 0;font-size:14px;cursor:pointer}
+.ask input{accent-color:var(--paper)}
+.opts{margin:0 18px 12px;padding-left:18px;font-size:14px}
+
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.mini{background:var(--card);border:1px solid var(--rule);border-radius:6px;padding:14px 16px}
+.mini h4{margin:6px 0 4px;font-size:15px;font-weight:600}
+.mini p{margin:0;font-size:13.5px;color:var(--muted)}
+details{margin-top:8px;font-size:13px}
+summary{cursor:pointer;color:var(--muted)}
+.hist{font-family:"IBM Plex Mono";font-size:12px;margin-top:8px}
+.hist div{display:flex;gap:10px;padding:2px 0}.hist div span:first-child{min-width:40px;text-align:right;color:var(--muted)}
+
+.trust{font:500 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.05em}
+.t-machine-verified{color:var(--proven)}.t-earned{color:var(--supported)}.t-probation{color:var(--weak)}.t-never-delegated{color:var(--refused)}
+
+.receipt{background:var(--card);border:1px solid var(--ink);border-radius:6px;padding:22px;font-size:14px;position:relative}
+.receipt h3{font-family:Fraunces,Georgia,serif;margin:0 0 4px;font-size:22px}
+.receipt .meta{font-family:"IBM Plex Mono";font-size:12px;color:var(--muted);margin-bottom:16px}
+.receipt h4{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:18px 0 6px;font-weight:500}
+.receipt ul{margin:0;padding-left:18px}.receipt li{margin:3px 0}
+.receipt input[type=text],.receipt textarea{width:100%;font:inherit;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:4px;padding:9px 10px}
+.receipt textarea{min-height:84px;resize:vertical}
+.dec{display:flex;gap:8px;flex-wrap:wrap}
+.dec label{border:1px solid var(--rule);padding:8px 12px;border-radius:4px;cursor:pointer;background:var(--paper)}
+.dec input{margin-right:6px}
+.sign{margin-top:18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.sign button{font:600 15px "IBM Plex Sans";background:var(--ink);color:var(--paper);border:0;padding:12px 22px;border-radius:4px;cursor:pointer}
+.sign button:disabled{opacity:.4;cursor:not-allowed}
+.sign .why{font-size:13px;color:var(--muted)}
+.warn{color:var(--contested)}
+.log td{font-size:13px}
+footer{padding:30px 0 60px;color:var(--muted);font-size:13px}
+@media (max-width:760px){
+  .funnel{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  .ev-row{grid-template-columns:1fr}
+  .card .hd .rq{margin-left:0}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <span><b>Case file</b> &nbsp;·&nbsp; AI reviews, a named human decides</span>
+  <span class="mono" id="meta">loading…</span>
+</div></header>
+
+<main class="wrap" id="app"></main>
+
+<footer class="wrap">
+  Reference implementation for Junction 2026 · Earned Trust in AI Code. Sample change: agent-written branch
+  <code>ju26-issue-2297</code> of MessagePack-CSharp. No real customer data.
+</footer>
+
+<script>
+const $ = (s, el=document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LABEL = {"proven":"Proven","supported":"Supported","contested":"Contested","refused":"Refused to decide",
+  "weak-evidence":"Weak evidence","unchecked":"Not checked","false":"False","partly-true":"Partly true",
+  "misleading":"Misleading","unstated":"Not mentioned"};
+const chip = s => `<span class="chip s-${s}">${LABEL[s]||s}</span>`;
+const short = p => p.split("/").pop();
+
+async function main(){
+  const c = await (await fetch("/api/case/2297")).json();
+  const r = c.review, k = c.checks, ch = r.change;
+  const snap = k.checks.find(x=>x.id==="snapshot-shape"), pairs = k.checks.find(x=>x.id==="template-pairs");
+  const decide = r.findings.filter(f=>["contested","refused"].includes(f.status));
+  const glance = r.findings.filter(f=>!["contested","refused"].includes(f.status));
+  const total = k.files_total, proven = snap.passed, nDecide = decide.length;
+  const skim = total - proven;
+  $("#meta").textContent = `${ch.id} · commit ${k.head_commit.slice(0,8)} · evidence ${c.evidence_hash}`;
+
+  $("#app").innerHTML = `
+  <h1>${esc(ch.title)}</h1>
+  <p class="lede">Written by a ${esc(ch.author)}. Reviewed by ${esc(ch.reviewer)}.
+  The reviewer does not approve anything: it sorts what it can prove from what a person must decide, and shows its evidence.</p>
+
+  <div class="req">
+    <span class="id">${esc(ch.requirement.id)}</span> · <a href="${esc(ch.requirement.source)}">source issue</a>
+    <blockquote>“${esc(ch.requirement.text)}”</blockquote>
+    <ul>${ch.requirement.acceptance.map(a=>`<li><code>${a.id}</code>${esc(a.text)}</li>`).join("")}</ul>
+  </div>
+
+  <div class="funnel">
+    <div class="fstep"><div class="n">${total}</div><div class="l">files changed, ${k.lines[0]} lines added</div></div>
+    <div class="fstep"><div class="n">${proven}</div><div class="l">proven by a re-runnable check. Nobody needs to read them</div></div>
+    <div class="fstep"><div class="n">${skim - 0}</div><div class="l">left after the checks, grouped into ${glance.length + nDecide} findings</div></div>
+    <div class="fstep you"><div class="n">${nDecide}</div><div class="l">decisions only the owner can make</div></div>
+  </div>
+  <div class="bar">
+    <span style="flex:${proven};background:var(--proven)"></span>
+    <span style="flex:${skim-1};background:var(--supported)"></span>
+    <span style="flex:1;background:var(--refused)"></span>
+  </div>
+  <div class="legend"><span><i style="background:var(--proven)"></i>machine-proven</span><span><i style="background:var(--supported)"></i>explained, glance</span><span><i style="background:var(--refused)"></i>policy file, human decides</span></div>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>The story the change tells, checked</h2></div>
+    <p class="sub">An agent's account of its own change is a set of claims, not evidence. Each claim is checked against the diff and against outside sources.</p>
+    <div class="tbl"><table>
+      <tr><th>The change says</th><th>Where</th><th>Verdict</th><th>See</th></tr>
+      ${r.story.map(s=>`<tr><td class="q">${esc(s.claim)}</td><td class="mono">${esc(s.where)}</td><td>${chip(s.verdict)}</td><td class="mono"><a href="#${s.ref}">${s.ref}</a></td></tr>`).join("")}
+    </table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>Needs your decision</h2></div>
+    <p class="sub">What the reviewer found that changes whether the requirement is met, and what it refused to decide. Answer these and you have reviewed the risky part of the change.</p>
+    ${decide.map(findingCard).join("")}
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>Worth a glance</h2></div>
+    <p class="sub">Explained by the reviewer, with the reason shown. Read the summary; open the evidence only if it does not add up.</p>
+    ${glance.map(findingCard).join("")}
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>Proven by machine</h2></div>
+    <p class="sub">Deterministic checks with no language model involved. Anyone can re-run them and get the same answer.</p>
+    <div class="grid2">
+      <div class="mini">${chip("proven")}<h4>${esc(r.proven[0].title)}</h4>
+        <p>${esc(snap.method)} Linked to <code>${r.proven[0].requirement}</code>.</p>
+        <div class="rerun"><code>${esc(snap.rerun)}</code><button data-copy>copy</button></div>
+        <details><summary>Every line added across ${proven} files</summary><div class="hist">
+          ${k.snapshot_histogram.map(([l,n])=>`<div><span>${n}</span><span>${esc(l)}</span></div>`).join("")}</div></details>
+        <details><summary>${snap.failed} exceptions, explained by F2</summary><div class="hist">
+          ${snap.exceptions.map(e=>`<div><span>✕</span><span>${esc(short(e.file))}</span></div>`).join("")}</div></details>
+      </div>
+      <div class="mini">${chip("proven")}<h4>${esc(r.proven[1].title)}</h4>
+        <p>${esc(pairs.method)}</p>
+        <div class="hist">${pairs.pairs.map(p=>`<div><span>${p.tt_attrs}=${p.cs_attrs}</span><span>${esc(short(p.template))}</span></div>`).join("")}</div>
+        <h4 style="margin-top:14px">${esc(r.proven[2].title)}</h4>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>Not checked, and why</h2></div>
+    <p class="sub">The reviewer states what it did not check, so the owner signs off knowing it.</p>
+    <div class="tbl"><table>
+      <tr><th>Not checked</th><th>Why</th></tr>
+      ${r.not_checked.map(n=>`<tr><td>${chip("unchecked")} &nbsp;${esc(n.what)}</td><td>${esc(n.why)}</td></tr>`).join("")}
+    </table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">06</span><h2>Where human attention goes</h2></div>
+    <p class="sub">Risk: <b>${esc(r.routing.risk)}</b>. ${esc(r.routing.why)} How much a person reads depends on how much trust each area has earned from past reviews.</p>
+    <div class="tbl"><table>
+      <tr><th>Area</th><th>Files</th><th>Trust</th><th>Human effort</th></tr>
+      ${r.routing.areas.map(a=>`<tr><td>${esc(a.area)}</td><td class="mono">${a.files}</td><td class="trust t-${a.trust.replace(/ /g,"-")}">${esc(a.trust)}</td><td>${esc(a.human)}</td></tr>`).join("")}
+    </table></div>
+  </section>
+
+  <section id="signoff">
+    <div class="sec-head"><span class="sec-num">07</span><h2>Sign-off</h2></div>
+    <p class="sub">The owner signs what was checked, what was not, and the risk they accept. The signature is tied to this commit and this evidence; if either changes, the sign-off is void.</p>
+    <div class="receipt">
+      <h3>Receipt · ${esc(ch.id)} → ${esc(ch.requirement.id)}</h3>
+      <div class="meta">commit ${k.head_commit.slice(0,12)} · evidence ${c.evidence_hash}</div>
+      <h4>Checked, and by what</h4>
+      <ul>
+        <li>${proven} of ${snap.passed+snap.failed} generated snapshots: shape check (machine)</li>
+        <li>${pairs.passed} template pairs: consistency check (machine)</li>
+        <li>Attribute availability on netstandard2.0 / .NET Framework 4.6.2: reference-assembly metadata (machine)</li>
+        <li>Story vs diff, side fixes, test quality: AI reviewer, findings ${r.findings.map(f=>f.id).join(", ")}</li>
+        <li id="r-owner-checks">Decisions on ${decide.map(f=>f.id).join(" and ")}: you</li>
+      </ul>
+      <h4>Not checked</h4>
+      <ul>${r.not_checked.map(n=>`<li>${esc(n.what)}</li>`).join("")}</ul>
+      <h4>Spot-check the reviewer (optional, counts towards its track record)</h4>
+      <div class="dec">${r.findings.concat(r.proven).map(f=>`<label><input type="checkbox" name="spot" value="${f.id}">${f.id} looked right</label>`).join("")}</div>
+      <h4>Residual risk I accept</h4>
+      <textarea id="risk" placeholder="e.g. Not run on a netstandard2.0 consumer; relying on reference-assembly metadata."></textarea>
+      <h4>Decision</h4>
+      <div class="dec">
+        <label><input type="radio" name="dec" value="accept">Accept</label>
+        <label><input type="radio" name="dec" value="accept-with-conditions">Accept with conditions</label>
+        <label><input type="radio" name="dec" value="reject">Send back to the agent</label>
+      </div>
+      <h4>Owner</h4>
+      <input type="text" id="owner" placeholder="Your full name" autocomplete="name">
+      <div class="sign"><button id="signbtn" disabled>Sign as owner</button><span class="why" id="why"></span></div>
+    </div>
+    <h4 style="margin:26px 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:500">Decision log</h4>
+    <div class="tbl log"><table id="log"></table></div>
+  </section>`;
+
+  document.querySelectorAll("[data-copy]").forEach(b=>b.onclick=()=>{
+    navigator.clipboard?.writeText(b.previousElementSibling.textContent); b.textContent="copied";});
+  const update = () => {
+    const missing = [];
+    decide.forEach(f=>{ if(!document.querySelector(`input[name="ans-${f.id}"]:checked`)) missing.push(`answer ${f.id}`); });
+    if(!document.querySelector('input[name="dec"]:checked')) missing.push("pick a decision");
+    if(!$("#risk").value.trim()) missing.push("state the residual risk");
+    if($("#owner").value.trim().split(/\s+/).length<2) missing.push("sign with your full name");
+    $("#signbtn").disabled = missing.length>0;
+    $("#why").innerHTML = missing.length ? "Still needed: "+missing.join(", ") : "Ready. Your name goes on this change.";
+  };
+  document.addEventListener("input", update); update();
+  $("#signbtn").onclick = async () => {
+    const answers = {};
+    decide.forEach(f=>answers[f.id]=document.querySelector(`input[name="ans-${f.id}"]:checked`).value);
+    const res = await fetch("/api/signoff",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({
+      change:"2297", evidence_hash:c.evidence_hash, owner:$("#owner").value, answers,
+      decision:document.querySelector('input[name="dec"]:checked').value, residual_risk:$("#risk").value,
+      spot_checked:[...document.querySelectorAll('input[name="spot"]:checked')].map(x=>x.value)})});
+    const j = await res.json();
+    $("#why").innerHTML = res.ok ? `Signed ${esc(j.at)}.` : `<span class="warn">${esc(j.error)}</span>`;
+    loadLog();
+  };
+  loadLog();
+}
+
+function findingCard(f){
+  return `<div class="card" id="${f.id}">
+    <div class="hd">${chip(f.status)}<span class="fid">${f.id} · ${esc(f.severity)}</span>
+      <span class="rq">${f.requirement ? "→ "+esc(f.requirement) : "→ no requirement asks for this"}</span></div>
+    <h3>${esc(f.title)}</h3>
+    <p>${esc(f.summary)}</p>
+    <div class="ev">${f.evidence.map(e=>`<div class="ev-row"><div class="ev-kind ${e.kind}">${e.kind}</div><div>
+      <div>${esc(e.label)}</div><div class="ev-res">${esc(e.result)}</div>
+      ${e.rerun?`<div class="rerun"><code>${esc(e.rerun)}</code><button data-copy>copy</button></div>`:""}</div></div>`).join("")}</div>
+    ${f.refusal_reason?`<div class="note"><b>Why the reviewer refused:</b> ${esc(f.refusal_reason)}</div>`:""}
+    ${f.would_be_wrong_if?`<div class="note"><b>This finding would be wrong if:</b> ${esc(f.would_be_wrong_if)}</div>`:""}
+    ${f.suggestion?`<div class="note"><b>Suggested fix:</b> ${esc(f.suggestion)}</div>`:""}
+    ${f.owner_question?`<div class="ask"><div class="qq">${esc(f.owner_question)}</div>
+      ${(f.options||["Yes, fix before merge","No, keep as is","Unsure, ask a maintainer"]).map(o=>`<label><input type="radio" name="ans-${f.id}" value="${esc(o)}">${esc(o)}</label>`).join("")}</div>`:""}
+  </div>`;
+}
+
+async function loadLog(){
+  const rows = await (await fetch("/api/signoffs")).json();
+  $("#log").innerHTML = `<tr><th>When (UTC)</th><th>Owner</th><th>Decision</th><th>Commit · evidence</th><th>Residual risk</th></tr>` +
+    (rows.length ? rows.slice().reverse().map(r=>`<tr><td class="mono">${esc(r.at)}</td><td>${esc(r.owner)}</td><td>${esc(r.decision)}</td>
+      <td class="mono">${esc(r.commit.slice(0,8))} · ${esc(r.evidence_hash)}</td><td>${esc(r.residual_risk)}</td></tr>`).join("")
+      : `<tr><td colspan="5">No sign-offs yet. Nothing merges without one.</td></tr>`);
+}
+main();
+</script>
+</body>
+</html>

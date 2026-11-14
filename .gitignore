@@ -1,0 +1,5 @@
+sample-repo/
+__pycache__/
+.venv/
+evidence/pkgs/
+data/signoffs.jsonl

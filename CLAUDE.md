@@ -4,7 +4,15 @@ Standing context for the `pikkuinen-hackathon` Claude session. Keep this file cu
 
 ## Goal
 
-(Not set yet: fill in the hackathon, its theme, deadline and what we are building.)
+Junction 2026, Tieto challenge "Earned Trust in AI Code": an AI code review concept where AI reviews
+and a named human stays accountable. 24 h to submit (started 2026-11-14). Judged on clarity 30%,
+practicality 25%, measurement 25%, evidence 20%. Deliverables: concept card, live walkthrough,
+lessons/decision log, demo video. Input repo: github.com/te-industry-tech-office/junction26-messagepack-csharp
+(branches ju26-issue-2283, -2234, -2129, -2297). Status: demo v1 live at https://tieto.psavela.com (user service tieto-casefile, port 5203, server.py + web/index.html; case data in casefile/ and data/2297.checks.json, regenerate with casefile/analyze.py). Log in DECISIONS.md.
+
+Finding so far: all four AI branches carry the same unrequested change in Directory.Packages.props
+(analyzer Roslyn floor 4.3.0 -> 4.12.0, PolySharp 1.14.1 -> 1.15.0). In 2297, 222 of 238 files are
+generated `.g.cs` snapshots.
 
 ## Machine
 
