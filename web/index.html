@@ -3,229 +3,231 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Case File · Earned Trust</title>
+<title>Earned Trust · Case 2297</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --paper:#f6f3ec; --card:#fffdf8; --ink:#1d1b17; --muted:#7a7468; --rule:#e2dccf;
-  --green:#2f7a4f; --green-bg:#e3f1e8; --amber:#b4541a; --amber-bg:#fbeadf;
-  --violet:#6b3fa0; --violet-bg:#efe6f8; --grey-bg:#ece8df;
+  --green:#2f7a4f; --red:#b3401a; --red-bg:#fbe7dc; --add:#e6f2e9; --del:#fbe7dc;
 }
 @media (prefers-color-scheme: dark){:root{
   --paper:#16150f; --card:#1f1d17; --ink:#ece7da; --muted:#a39d8f; --rule:#34302a;
-  --green:#7fcf9c; --green-bg:#1c3125; --amber:#f0a06c; --amber-bg:#3a2417;
-  --violet:#c7a5ef; --violet-bg:#2b2238; --grey-bg:#2a2720;
+  --green:#7fcf9c; --red:#f0a06c; --red-bg:#3a2417; --add:#1c3125; --del:#3a2417;
 }}
 *{box-sizing:border-box}
-body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 "IBM Plex Sans",system-ui,sans-serif}
-.mono{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:12px}
-.wrap{max-width:860px;margin:0 auto;padding:0 20px}
-h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.01em;margin:0}
-a{color:inherit}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}
+.wrap{max-width:720px;margin:0 auto;padding:0 20px}
+h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.015em;margin:0;font-weight:700}
+.mono,pre{font-family:"IBM Plex Mono",ui-monospace,monospace}
+.kicker{font:500 12px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:14px}
+section{padding:72px 0;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:0;padding-top:56px}
+h1{font-size:clamp(34px,6vw,54px);line-height:1.05}
+h2{font-size:clamp(28px,4.5vw,40px);line-height:1.1;margin-bottom:22px}
+p.big{font-size:20px;color:var(--muted);margin:16px 0 0;max-width:34em}
 
-.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:16px 0;color:var(--muted);font-size:13px}
-.top b{color:var(--ink);text-transform:uppercase;letter-spacing:.1em;font-size:12px}
+/* The pull request as it arrives */
+.pr{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:22px 24px;margin-top:30px}
+.pr .t{font-weight:600;font-size:18px}
+.pr .m{font-size:14px;color:var(--muted);margin-top:4px}
+.pr .m b{color:var(--green);font-weight:500}.pr .m i{font-style:normal;color:var(--red)}
+.pr .say{margin-top:16px;padding-top:16px;border-top:1px solid var(--rule);font-size:15px}
+.pr .say div{margin:4px 0}.pr .say span{color:var(--green);margin-right:8px}
+.q{font-family:Fraunces,Georgia,serif;font-size:26px;margin-top:34px}
 
-.hero{padding:40px 0 34px}
-.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.02;font-weight:700}
-.hero h1 em{font-style:normal;color:var(--muted)}
-.req{margin-top:16px;color:var(--muted);max-width:60ch}
-.req .mono{color:var(--ink);margin-right:6px}
-.bar{display:flex;height:8px;border-radius:4px;overflow:hidden;margin-top:26px;gap:2px}
-.bar span{display:block}
-.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:8px}
-.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:6px}
+/* The two problems */
+.prob{margin-top:40px}
+.prob .n{font:600 13px "IBM Plex Mono";color:var(--red);letter-spacing:.06em}
+.prob h3{font-size:24px;margin:6px 0 14px;line-height:1.2}
+pre{margin:0;font-size:12.5px;line-height:1.6;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:10px 0;overflow-x:auto}
+pre span{display:block;padding:0 14px;white-space:pre}
+pre .a{background:var(--add)}pre .d{background:var(--del)}pre .c{color:var(--muted)}
+.claim{margin-top:12px;font-size:15px;border-left:3px solid var(--rule);padding-left:14px;color:var(--muted)}
+.claim b{color:var(--ink);font-weight:500}
+.hurt{margin-top:12px;font-size:16px}
+.hurt::before{content:"Who gets hurt  ";font:600 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--red);margin-right:6px}
+.punch{margin-top:56px;font-family:Fraunces,Georgia,serif;font-size:clamp(26px,4vw,34px);line-height:1.2}
+.punch em{font-style:normal;color:var(--red)}
 
-section{padding:34px 0;border-top:1px solid var(--rule)}
-h2{font-size:24px;margin-bottom:18px}
-h2 small{font:400 13px "IBM Plex Sans";color:var(--muted);margin-left:8px;letter-spacing:0}
+/* Who decides what */
+.who{display:grid;gap:0;margin-top:8px}
+.who>div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:22px 0;border-bottom:1px solid var(--rule)}
+.who>div:last-child{border-bottom:0}
+.who .r{font:600 12px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;padding-top:4px}
+.who .r small{display:block;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;font-size:12px;margin-top:4px}
+.who .x{font-size:17px}
+.who .x .s{font-size:14px;color:var(--muted);margin-top:4px}
+.who .human .r{color:var(--red)}
 
-/* Safety rules */
-.rules{display:grid;gap:8px}
-.rule{display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:center;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:12px 16px}
-.rule .n{font:500 12px "IBM Plex Mono";color:var(--muted)}
-.rule .t{font-weight:600}
-.rule .d{font-size:13px;color:var(--muted)}
-.rule .s{text-align:right}
-.rule .hit{font-size:12.5px;color:var(--muted);margin-top:4px}
-.rule.triggered{border-color:var(--amber);box-shadow:inset 3px 0 0 var(--amber)}
-.pill{display:inline-block;font:500 10.5px/1 "IBM Plex Mono";text-transform:uppercase;letter-spacing:.07em;padding:5px 8px;border-radius:20px;white-space:nowrap}
-.p-triggered,.p-contested{color:var(--amber);background:var(--amber-bg)}
-.p-enforced,.p-proven,.p-supported{color:var(--green);background:var(--green-bg)}
-.p-refused{color:var(--violet);background:var(--violet-bg)}
-.p-weak-evidence,.p-unchecked{color:var(--muted);background:var(--grey-bg)}
-.rule a{text-decoration:none;border-bottom:1px solid var(--rule)}
-
-/* Decisions */
-.dcard{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:20px 22px;margin-bottom:14px}
-.dcard .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px}
-.dcard .row .mono{color:var(--muted)}
-.dcard h3{font-size:22px;margin-bottom:6px}
-.dcard p{margin:0 0 16px;color:var(--muted)}
+/* Sign */
+.sign{background:var(--card);border:1.5px solid var(--ink);border-radius:12px;padding:26px}
+.sign .meta{font-size:12px;color:var(--muted)}
+.qrow{margin-top:22px}
+.qrow .ql{font-weight:500;margin-bottom:10px}
 .choices{display:flex;gap:8px;flex-wrap:wrap}
 .choices label{cursor:pointer}
 .choices input{position:absolute;opacity:0}
-.choices span{display:inline-block;border:1px solid var(--rule);border-radius:6px;padding:8px 14px;font-size:14px;background:var(--paper)}
+.choices span{display:inline-block;border:1px solid var(--rule);border-radius:8px;padding:9px 15px;font-size:15px;background:var(--paper)}
 .choices input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-.choices input:focus-visible+span{outline:2px solid var(--amber)}
-details{margin-top:14px}
-summary{cursor:pointer;color:var(--muted);font-size:13px;list-style:none}
-summary::before{content:"▸ "}details[open] summary::before{content:"▾ "}
-.ev{margin-top:10px;font-size:13px;display:grid;gap:10px}
-.ev .lbl{color:var(--muted)}
-.ev code{display:block;font:12px/1.5 "IBM Plex Mono";background:var(--paper);border:1px solid var(--rule);border-radius:4px;padding:6px 8px;white-space:pre-wrap;word-break:break-word;margin-top:3px}
-.ev .wrong{border-left:2px solid var(--rule);padding-left:10px;color:var(--muted)}
-
-/* Handled */
-.handled{display:grid;gap:0;background:var(--card);border:1px solid var(--rule);border-radius:10px}
-.handled>div{display:grid;grid-template-columns:110px 1fr;gap:14px;padding:12px 18px;border-bottom:1px solid var(--rule);align-items:baseline}
-.handled>div:last-child{border-bottom:0}
-.handled .x{font-size:13px;color:var(--muted)}
-
-/* Sign */
-.sign{background:var(--card);border:1.5px solid var(--ink);border-radius:10px;padding:22px}
-.sign .meta{color:var(--muted);margin-bottom:16px}
-.sign label.f{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:16px 0 6px}
-.sign input[type=text],.sign textarea{width:100%;font:inherit;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:6px;padding:9px 11px}
-.sign textarea{min-height:60px;resize:vertical}
-.go{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:18px}
-.go button{font:600 15px "IBM Plex Sans";background:var(--ink);color:var(--paper);border:0;padding:12px 22px;border-radius:6px;cursor:pointer}
-.go button:disabled{opacity:.35;cursor:not-allowed}
-.go .why{font-size:13px;color:var(--muted)}
-.warn{color:var(--amber)}
-.log{margin-top:18px;font-size:13px}
-.log div{display:flex;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--rule)}
-.log .mono{color:var(--muted)}
-footer{padding:30px 0 60px;color:var(--muted);font-size:12.5px}
-@media (max-width:640px){
-  .rule{grid-template-columns:1fr;gap:6px}.rule .s{text-align:left}.rule .n{display:none}
-  .handled>div{grid-template-columns:1fr;gap:4px}
-}
+.choices input:focus-visible+span{outline:2px solid var(--red)}
+.gaps{margin-top:22px;font-size:14px;color:var(--muted)}
+.gaps b{color:var(--ink);font-weight:500}
+.nm{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
+.nm input{flex:1;min-width:200px;font:inherit;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
+.nm button{font:600 16px "IBM Plex Sans";background:var(--ink);color:var(--paper);border:0;padding:10px 26px;border-radius:8px;cursor:pointer}
+.nm button:disabled{opacity:.3;cursor:not-allowed}
+.why{font-size:13px;color:var(--muted);margin-top:10px;min-height:1.5em}
+.warn{color:var(--red)}
+.log div{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;padding:10px 0;border-top:1px solid var(--rule)}
+.log .mono{color:var(--muted);font-size:12px}
+footer{padding:20px 0 60px;color:var(--muted);font-size:13px}
+@media (max-width:600px){.who>div{grid-template-columns:1fr;gap:6px}}
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="top"><span><b>Case file</b> · AI reviews, a named human decides</span><span class="mono" id="meta"></span></div>
-  <main id="app"></main>
-  <footer>Reference implementation · Junction 2026, Earned Trust in AI Code · agent branch <span class="mono">ju26-issue-2297</span> of MessagePack-CSharp</footer>
-</div>
+<main class="wrap">
+
+<section>
+  <div class="kicker">Friday, 16:40</div>
+  <h1>An AI agent opens a pull request. Your name goes on the approval.</h1>
+  <div class="pr">
+    <div class="t">Add ExcludeFromCodeCoverage attribute to generated code</div>
+    <div class="m"><span id="files">238</span> files · <b>+<span id="add">1385</span></b> <i>−<span id="del">11</span></i> · requirement <span class="mono">REQ-2297</span></div>
+    <div class="say">
+      <div><span>✓</span>All generated code is now excluded from coverage</div>
+      <div><span>✓</span>Tests added</div>
+      <div><span>✓</span>Documentation updated</div>
+    </div>
+  </div>
+  <div class="q">Would you approve it?</div>
+  <p class="big">Almost all of the diff is generated code that looks identical. Nobody reads 238 files on a Friday.</p>
+</section>
+
+<section>
+  <div class="kicker">What is hiding in it</div>
+  <h2>Two problems that none of the agent's checks would catch.</h2>
+
+  <div class="prob">
+    <div class="n">01 · THE FEATURE QUIETLY SKIPS MANY USERS</div>
+    <h3>The agent believed something false and built it in.</h3>
+<pre><span class="a">+#if !NETSTANDARD2_0 && !NETFRAMEWORK</span><span class="a">+   [ExcludeFromCodeCoverage]</span><span class="a">+#endif</span></pre>
+    <div class="claim">The agent wrote in the README: <b>“not available on netstandard2.0 or .NET Framework.”</b><br>
+      Microsoft's own reference assemblies show it is available on both. Its tests check that the wrong behaviour is there.</div>
+    <div class="hurt">Every library built for netstandard2.0, a common target for NuGet packages. The docs tell them this is expected.</div>
+  </div>
+
+  <div class="prob">
+    <div class="n">02 · A CHANGE NOBODY ASKED FOR</div>
+    <h3>It also raised the minimum compiler version.</h3>
+<pre><span class="c">  Directory.Packages.props</span><span class="d">- MicrosoftCodeAnalysisVersion  4.3.0</span><span class="a">+ MicrosoftCodeAnalysisVersion  4.12.0</span></pre>
+    <div class="claim">Not in the requirement, not in the description. <b>The same line is in all four pull requests this agent wrote.</b></div>
+    <div class="hurt">Teams on Visual Studio older than 17.12 or a .NET SDK older than 9, whose code generator may stop loading.</div>
+  </div>
+
+  <div class="punch">No test catches either.<br><em>Both break a promise to users.</em></div>
+</section>
+
+<section>
+  <div class="kicker">So who approves what</div>
+  <h2>AI does the reading. A person makes the call.</h2>
+  <div class="who">
+    <div>
+      <div class="r">Machine<small>deterministic check</small></div>
+      <div class="x">Proved <span id="proven">220</span> generated files contain only the new attribute.
+        <div class="s">Same answer every run, no AI involved. Nobody needs to read them.</div></div>
+    </div>
+    <div>
+      <div class="r">AI reviewer<small>advice with evidence</small></div>
+      <div class="x">Found problem 01 and checked it against Microsoft's reference assemblies.
+        <div class="s">Never approves. A finding without a check anyone can re-run is not shown.</div></div>
+    </div>
+    <div>
+      <div class="r">AI reviewer<small>refused to decide</small></div>
+      <div class="x">Flagged problem 02 and would not judge it.
+        <div class="s">Dropping support for older tools is a product decision, not a code question.</div></div>
+    </div>
+    <div class="human">
+      <div class="r">Named owner<small>accountable</small></div>
+      <div class="x">Answers two questions and signs.
+        <div class="s">The signature is locked to this exact commit and evidence. Any new push voids it.</div></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Sign-off</div>
+  <h2>Two questions instead of 238 files.</h2>
+  <div class="sign">
+    <div class="meta mono" id="meta">loading…</div>
+    <div class="qrow">
+      <div class="ql">01 · Should netstandard2.0 and .NET Framework users get the feature?</div>
+      <div class="choices">
+        <label><input type="radio" name="F1" value="Fix before merge"><span>Yes, fix before merge</span></label>
+        <label><input type="radio" name="F1" value="Keep as is"><span>No, keep as is</span></label>
+      </div>
+    </div>
+    <div class="qrow">
+      <div class="ql">02 · Do we drop support for older Visual Studio and .NET SDKs?</div>
+      <div class="choices">
+        <label><input type="radio" name="R1" value="Revert it"><span>No, revert it</span></label>
+        <label><input type="radio" name="R1" value="Split into own PR"><span>Decide in a separate PR</span></label>
+        <label><input type="radio" name="R1" value="Accept the support drop"><span>Yes, drop them</span></label>
+      </div>
+    </div>
+    <div class="gaps"><b>Not checked, and you accept that:</b> the test suite was not run, and no real netstandard2.0 project was compiled.</div>
+    <div class="nm"><input id="owner" placeholder="Your full name" autocomplete="name"><button id="sign" disabled>Sign</button></div>
+    <div class="why" id="why"></div>
+    <div class="log" id="log"></div>
+  </div>
+</section>
+
+</main>
+<footer class="wrap">Reference implementation · Junction 2026, Earned Trust in AI Code · real agent-written branch <span class="mono">ju26-issue-2297</span> of MessagePack-CSharp</footer>
 
 <script>
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const LBL = {"weak-evidence":"weak evidence","unchecked":"not checked"};
-const pill = s => `<span class="pill p-${s}">${LBL[s]||s}</span>`;
+const RESIDUAL = "Test suite not run; no real netstandard2.0 project compiled.";
+let caseData;
 
 async function main(){
-  const c = await (await fetch("/api/case/2297")).json();
-  const r = c.review, k = c.checks, ch = r.change;
-  const snap = k.checks.find(x => x.id === "snapshot-shape");
-  const decide = r.findings.filter(f => ["contested","refused"].includes(f.status));
-  const other = r.findings.filter(f => !decide.includes(f));
-  $("#meta").textContent = `commit ${k.head_commit.slice(0,8)} · evidence ${c.evidence_hash}`;
-
-  $("#app").innerHTML = `
-  <div class="hero">
-    <h1>${k.files_total} files changed.<br><em>${decide.length} need you.</em></h1>
-    <div class="req"><span class="mono">${esc(ch.requirement.id)}</span>${esc(ch.title)}. Written by an agent, reviewed by AI, signed by a person.</div>
-    <div class="bar">
-      <span style="flex:${snap.passed};background:var(--green)"></span>
-      <span style="flex:${k.files_total - snap.passed - 1};background:var(--muted);opacity:.45"></span>
-      <span style="flex:4;background:var(--amber)"></span>
-    </div>
-    <div class="legend">
-      <span><i style="background:var(--green)"></i>${snap.passed} proven by machine</span>
-      <span><i style="background:var(--muted);opacity:.45"></i>${k.files_total - snap.passed} explained by the reviewer</span>
-      <span><i style="background:var(--amber)"></i>${decide.length} decisions for the owner</span>
-    </div>
-  </div>
-
-  <section>
-    <h2>Safety rules <small>${r.rules.filter(x=>x.state==="triggered").length} triggered on this change</small></h2>
-    <div class="rules">${r.rules.map(x => `
-      <div class="rule ${x.state}">
-        <div class="n">${x.id}</div>
-        <div><div class="t">${esc(x.rule)}</div><div class="d">${esc(x.detail)}</div></div>
-        <div class="s">${pill(x.state)}<div class="hit">${x.ref ? `<a href="#${x.ref}">${esc(x.hit)}</a>` : esc(x.hit)}</div></div>
-      </div>`).join("")}</div>
-  </section>
-
-  <section>
-    <h2>Your decisions</h2>
-    ${decide.map(f => `
-      <div class="dcard" id="${f.id}">
-        <div class="row">${pill(f.status)}<span class="mono">${f.id} · ${f.requirement ? esc(f.requirement) : "no requirement asks for this"}</span></div>
-        <h3>${esc(f.short_title)}</h3>
-        <p>${esc(f.oneliner)}</p>
-        <div class="choices">${f.options.map(o => `<label><input type="radio" name="ans-${f.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("")}</div>
-        ${evidence(f)}
-      </div>`).join("")}
-  </section>
-
-  <section>
-    <h2>Handled without you</h2>
-    <div class="handled">
-      <div>${pill("proven")}<div>${snap.passed} generated files contain only the new attribute <div class="x">Re-runnable diff check, no AI involved.</div></div></div>
-      ${other.map(f => `<div>${pill(f.status)}<div>${esc(f.short_title)}<div class="x">${esc(f.oneliner)}</div></div></div>`).join("")}
-      <div>${pill("unchecked")}<div>${r.not_checked.length} things not checked<div class="x">${r.not_checked.map(n => esc(n.what)).join(" · ")}</div></div></div>
-    </div>
-  </section>
-
-  <section>
-    <h2>Sign-off</h2>
-    <div class="sign">
-      <div class="meta mono">${esc(ch.id)} → ${esc(ch.requirement.id)} · commit ${k.head_commit.slice(0,8)} · evidence ${c.evidence_hash}</div>
-      <div class="choices">
-        <label><input type="radio" name="dec" value="accept"><span>Accept</span></label>
-        <label><input type="radio" name="dec" value="accept-with-conditions"><span>Accept with conditions</span></label>
-        <label><input type="radio" name="dec" value="reject"><span>Send back to agent</span></label>
-      </div>
-      <label class="f" for="risk">Residual risk I accept</label>
-      <textarea id="risk">Not compiled for a netstandard2.0 consumer; relying on reference-assembly metadata.</textarea>
-      <label class="f" for="owner">Owner</label>
-      <input type="text" id="owner" placeholder="Full name" autocomplete="name">
-      <div class="go"><button id="signbtn" disabled>Sign</button><span class="why" id="why"></span></div>
-      <div class="log" id="log"></div>
-    </div>
-  </section>`;
-
-  const update = () => {
-    const miss = [];
-    decide.forEach(f => { if (!document.querySelector(`input[name="ans-${f.id}"]:checked`)) miss.push(f.id); });
-    if (!document.querySelector('input[name="dec"]:checked')) miss.push("decision");
-    if (!$("#risk").value.trim()) miss.push("residual risk");
-    if ($("#owner").value.trim().split(/\s+/).length < 2) miss.push("full name");
-    $("#signbtn").disabled = miss.length > 0;
-    $("#why").textContent = miss.length ? "Needed: " + miss.join(", ") : "Your name goes on this change.";
-  };
+  caseData = await (await fetch("/api/case/2297")).json();
+  const k = caseData.checks;
+  $("#files").textContent = k.files_total;
+  $("#add").textContent = k.lines[0];
+  $("#del").textContent = k.lines[1];
+  $("#proven").textContent = k.checks.find(x => x.id === "snapshot-shape").passed;
+  $("#meta").textContent = `PR-2297 → REQ-2297 · commit ${k.head_commit.slice(0,8)} · evidence ${caseData.evidence_hash}`;
   document.addEventListener("input", update); document.addEventListener("change", update); update();
-
-  $("#signbtn").onclick = async () => {
-    const answers = {};
-    decide.forEach(f => answers[f.id] = document.querySelector(`input[name="ans-${f.id}"]:checked`).value);
-    const res = await fetch("/api/signoff", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
-      change:"2297", evidence_hash:c.evidence_hash, owner:$("#owner").value, answers,
-      decision:document.querySelector('input[name="dec"]:checked').value, residual_risk:$("#risk").value})});
-    const j = await res.json();
-    $("#why").innerHTML = res.ok ? "Signed." : `<span class="warn">${esc(j.error)}</span>`;
-    loadLog();
-  };
   loadLog();
 }
 
-function evidence(f){
-  return `<details><summary>Evidence</summary><div class="ev">
-    ${f.evidence.map(e => `<div><span class="lbl">${esc(e.label)}</span><code>${esc(e.result)}</code>${e.rerun ? `<code>$ ${esc(e.rerun)}</code>` : ""}</div>`).join("")}
-    ${f.refusal_reason ? `<div class="wrong">Why the AI refused: ${esc(f.refusal_reason)}</div>` : ""}
-    ${f.would_be_wrong_if ? `<div class="wrong">Would be wrong if: ${esc(f.would_be_wrong_if)}</div>` : ""}
-  </div></details>`;
+const pick = n => document.querySelector(`input[name="${n}"]:checked`)?.value;
+
+function update(){
+  const miss = [];
+  if (!pick("F1")) miss.push("question 01");
+  if (!pick("R1")) miss.push("question 02");
+  if ($("#owner").value.trim().split(/\s+/).length < 2) miss.push("your full name");
+  $("#sign").disabled = miss.length > 0;
+  $("#why").textContent = miss.length ? "Still needed: " + miss.join(", ") : "";
 }
+
+$("#sign").onclick = async () => {
+  const decision = pick("F1") === "Keep as is" && pick("R1") === "Accept the support drop" ? "accept" : "accept-with-conditions";
+  const res = await fetch("/api/signoff", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+    change:"2297", evidence_hash:caseData.evidence_hash, owner:$("#owner").value,
+    answers:{F1:pick("F1"), R1:pick("R1")}, decision, residual_risk:RESIDUAL})});
+  const j = await res.json();
+  $("#why").innerHTML = res.ok ? "Signed. Your name is on this change." : `<span class="warn">${esc(j.error)}</span>`;
+  loadLog();
+};
 
 async function loadLog(){
   const rows = await (await fetch("/api/signoffs")).json();
-  $("#log").innerHTML = rows.slice().reverse().map(x =>
-    `<div><span class="mono">${esc(x.at)}</span><b>${esc(x.owner)}</b><span>${esc(x.decision)}</span><span class="mono">${esc(x.evidence_hash)}</span></div>`).join("");
+  $("#log").innerHTML = rows.slice(-5).reverse().map(x =>
+    `<div><b>${esc(x.owner)}</b><span>${esc(Object.values(x.answers || {}).join(" · "))}</span><span class="mono">${esc(x.at)} · ${esc(x.evidence_hash)}</span></div>`).join("");
 }
 main();
 </script>
