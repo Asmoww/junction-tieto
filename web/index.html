@@ -9,11 +9,11 @@
 <style>
 :root{
   --paper:#f6f3ec; --card:#fffdf8; --ink:#1d1b17; --muted:#7a7468; --rule:#e2dccf;
-  --green:#2f7a4f; --red:#b3401a; --red-bg:#fbe7dc; --add:#e6f2e9; --del:#fbe7dc;
+  --green:#2f7a4f; --red:#b3401a; --add:#e6f2e9; --del:#fbe7dc;
 }
 @media (prefers-color-scheme: dark){:root{
   --paper:#16150f; --card:#1f1d17; --ink:#ece7da; --muted:#a39d8f; --rule:#34302a;
-  --green:#7fcf9c; --red:#f0a06c; --red-bg:#3a2417; --add:#1c3125; --del:#3a2417;
+  --green:#7fcf9c; --red:#f0a06c; --add:#1c3125; --del:#3a2417;
 }}
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 "IBM Plex Sans",system-ui,sans-serif}
@@ -21,44 +21,55 @@ body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.55 "IBM Plex 
 h1,h2,h3{font-family:Fraunces,Georgia,serif;letter-spacing:-.015em;margin:0;font-weight:700}
 .mono,pre{font-family:"IBM Plex Mono",ui-monospace,monospace}
 .kicker{font:500 12px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-bottom:14px}
-section{padding:72px 0;border-top:1px solid var(--rule)}
-section:first-of-type{border-top:0;padding-top:56px}
-h1{font-size:clamp(34px,6vw,54px);line-height:1.05}
-h2{font-size:clamp(28px,4.5vw,40px);line-height:1.1;margin-bottom:22px}
-p.big{font-size:20px;color:var(--muted);margin:16px 0 0;max-width:34em}
+section{padding:80px 0;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:0;padding-top:64px}
+h1{font-size:clamp(40px,8vw,72px);line-height:1}
+h1 em{font-style:normal;color:var(--red)}
+h2{font-size:clamp(28px,4.5vw,40px);line-height:1.1;margin-bottom:34px}
+.lead{font-size:20px;color:var(--muted);margin-top:18px}
 
-/* The pull request as it arrives */
-.pr{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:22px 24px;margin-top:30px}
-.pr .t{font-weight:600;font-size:18px}
+.pr{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:20px 22px;margin-top:36px}
+.pr .t{font-weight:600}
 .pr .m{font-size:14px;color:var(--muted);margin-top:4px}
 .pr .m b{color:var(--green);font-weight:500}.pr .m i{font-style:normal;color:var(--red)}
-.pr .say{margin-top:16px;padding-top:16px;border-top:1px solid var(--rule);font-size:15px}
-.pr .say div{margin:4px 0}.pr .say span{color:var(--green);margin-right:8px}
-.q{font-family:Fraunces,Georgia,serif;font-size:26px;margin-top:34px}
+.pr .by{font-size:14px;margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)}
+.pr .by span{color:var(--muted)}
 
-/* The two problems */
-.prob{margin-top:40px}
-.prob .n{font:600 13px "IBM Plex Mono";color:var(--red);letter-spacing:.06em}
-.prob h3{font-size:24px;margin:6px 0 14px;line-height:1.2}
-pre{margin:0;font-size:12.5px;line-height:1.6;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:10px 0;overflow-x:auto}
+/* Problem */
+.probs{display:grid;gap:34px}
+.prob .n{font:600 12px "IBM Plex Mono";color:var(--red);letter-spacing:.08em;margin-bottom:6px}
+.prob h3{font-size:22px;line-height:1.25;margin-bottom:12px}
+pre{margin:0;font-size:12.5px;line-height:1.6;background:var(--card);border:1px solid var(--rule);border-radius:8px;padding:8px 0;overflow-x:auto}
 pre span{display:block;padding:0 14px;white-space:pre}
-pre .a{background:var(--add)}pre .d{background:var(--del)}pre .c{color:var(--muted)}
-.claim{margin-top:12px;font-size:15px;border-left:3px solid var(--rule);padding-left:14px;color:var(--muted)}
-.claim b{color:var(--ink);font-weight:500}
-.hurt{margin-top:12px;font-size:16px}
-.hurt::before{content:"Who gets hurt  ";font:600 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--red);margin-right:6px}
-.punch{margin-top:56px;font-family:Fraunces,Georgia,serif;font-size:clamp(26px,4vw,34px);line-height:1.2}
+pre .a{background:var(--add)}pre .d{background:var(--del)}
+.prob p{margin:10px 0 0;font-size:15px;color:var(--muted)}
+.punch{margin-top:50px;font-family:Fraunces,Georgia,serif;font-size:clamp(26px,4vw,34px);line-height:1.2}
 .punch em{font-style:normal;color:var(--red)}
 
-/* Who decides what */
-.who{display:grid;gap:0;margin-top:8px}
-.who>div{display:grid;grid-template-columns:150px 1fr;gap:20px;padding:22px 0;border-bottom:1px solid var(--rule)}
-.who>div:last-child{border-bottom:0}
-.who .r{font:600 12px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;padding-top:4px}
-.who .r small{display:block;font-weight:400;color:var(--muted);text-transform:none;letter-spacing:0;font-size:12px;margin-top:4px}
-.who .x{font-size:17px}
-.who .x .s{font-size:14px;color:var(--muted);margin-top:4px}
-.who .human .r{color:var(--red)}
+/* Friday 21:00 timeline */
+.tl{position:relative;margin-left:8px}
+.tl::before{content:"";position:absolute;left:62px;top:8px;bottom:8px;width:2px;background:var(--rule)}
+.step{display:grid;grid-template-columns:52px 22px 1fr;gap:12px;padding:0 0 30px;position:relative}
+.step:last-child{padding-bottom:0}
+.step .tm{font:500 14px "IBM Plex Mono";color:var(--muted);padding-top:2px;text-align:right}
+.step .dot{width:14px;height:14px;border-radius:50%;background:var(--paper);border:2px solid var(--muted);margin:5px 0 0 3px;position:relative;z-index:1}
+.step.m .dot{border-color:var(--green);background:var(--green)}
+.step.ai .dot{border-color:var(--ink)}
+.step.you .dot{border-color:var(--red);background:var(--red)}
+.step .w{font:600 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.step.you .w{color:var(--red)}
+.step .x{font-size:18px;margin-top:2px}
+.step .x small{display:block;font-size:14px;color:var(--muted);margin-top:2px}
+.total{margin-top:40px;display:flex;gap:30px;flex-wrap:wrap}
+.total div{font-family:Fraunces,Georgia,serif;font-size:44px;font-weight:700;line-height:1}
+.total div small{display:block;font:400 14px "IBM Plex Sans";color:var(--muted);margin-top:6px}
+
+/* Why safe */
+.rules{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.rule{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:20px}
+.rule .ic{font-size:22px;line-height:1;margin-bottom:12px}
+.rule h3{font-size:19px;line-height:1.2}
+.rule p{margin:6px 0 0;font-size:14px;color:var(--muted)}
 
 /* Sign */
 .sign{background:var(--card);border:1.5px solid var(--ink);border-radius:12px;padding:26px}
@@ -72,7 +83,6 @@ pre .a{background:var(--add)}pre .d{background:var(--del)}pre .c{color:var(--mut
 .choices input:checked+span{background:var(--ink);color:var(--paper);border-color:var(--ink)}
 .choices input:focus-visible+span{outline:2px solid var(--red)}
 .gaps{margin-top:22px;font-size:14px;color:var(--muted)}
-.gaps b{color:var(--ink);font-weight:500}
 .nm{display:flex;gap:10px;margin-top:22px;flex-wrap:wrap}
 .nm input{flex:1;min-width:200px;font:inherit;background:var(--paper);color:var(--ink);border:1px solid var(--rule);border-radius:8px;padding:10px 12px}
 .nm button{font:600 16px "IBM Plex Sans";background:var(--ink);color:var(--paper);border:0;padding:10px 26px;border-radius:8px;cursor:pointer}
@@ -82,81 +92,76 @@ pre .a{background:var(--add)}pre .d{background:var(--del)}pre .c{color:var(--mut
 .log div{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;padding:10px 0;border-top:1px solid var(--rule)}
 .log .mono{color:var(--muted);font-size:12px}
 footer{padding:20px 0 60px;color:var(--muted);font-size:13px}
-@media (max-width:600px){.who>div{grid-template-columns:1fr;gap:6px}}
+@media (max-width:600px){.rules{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main class="wrap">
 
 <section>
-  <div class="kicker">Friday, 16:40</div>
-  <h1>An AI agent opens a pull request. Your name goes on the approval.</h1>
+  <div class="kicker">Friday, 21:00</div>
+  <h1>An AI wrote it.<br><em>You</em> are responsible for it.</h1>
+  <p class="lead">If it breaks, it is your name on the approval, not the AI's.</p>
   <div class="pr">
     <div class="t">Add ExcludeFromCodeCoverage attribute to generated code</div>
-    <div class="m"><span id="files">238</span> files · <b>+<span id="add">1385</span></b> <i>−<span id="del">11</span></i> · requirement <span class="mono">REQ-2297</span></div>
-    <div class="say">
-      <div><span>✓</span>All generated code is now excluded from coverage</div>
-      <div><span>✓</span>Tests added</div>
-      <div><span>✓</span>Documentation updated</div>
-    </div>
-  </div>
-  <div class="q">Would you approve it?</div>
-  <p class="big">Almost all of the diff is generated code that looks identical. Nobody reads 238 files on a Friday.</p>
-</section>
-
-<section>
-  <div class="kicker">What is hiding in it</div>
-  <h2>Two problems that none of the agent's checks would catch.</h2>
-
-  <div class="prob">
-    <div class="n">01 · THE FEATURE QUIETLY SKIPS MANY USERS</div>
-    <h3>The agent believed something false and built it in.</h3>
-<pre><span class="a">+#if !NETSTANDARD2_0 && !NETFRAMEWORK</span><span class="a">+   [ExcludeFromCodeCoverage]</span><span class="a">+#endif</span></pre>
-    <div class="claim">The agent wrote in the README: <b>“not available on netstandard2.0 or .NET Framework.”</b><br>
-      Microsoft's own reference assemblies show it is available on both. Its tests check that the wrong behaviour is there.</div>
-    <div class="hurt">Every library built for netstandard2.0, a common target for NuGet packages. The docs tell them this is expected.</div>
-  </div>
-
-  <div class="prob">
-    <div class="n">02 · A CHANGE NOBODY ASKED FOR</div>
-    <h3>It also raised the minimum compiler version.</h3>
-<pre><span class="c">  Directory.Packages.props</span><span class="d">- MicrosoftCodeAnalysisVersion  4.3.0</span><span class="a">+ MicrosoftCodeAnalysisVersion  4.12.0</span></pre>
-    <div class="claim">Not in the requirement, not in the description. <b>The same line is in all four pull requests this agent wrote.</b></div>
-    <div class="hurt">Teams on Visual Studio older than 17.12 or a .NET SDK older than 9, whose code generator may stop loading.</div>
-  </div>
-
-  <div class="punch">No test catches either.<br><em>Both break a promise to users.</em></div>
-</section>
-
-<section>
-  <div class="kicker">So who approves what</div>
-  <h2>AI does the reading. A person makes the call.</h2>
-  <div class="who">
-    <div>
-      <div class="r">Machine<small>deterministic check</small></div>
-      <div class="x">Proved <span id="proven">220</span> generated files contain only the new attribute.
-        <div class="s">Same answer every run, no AI involved. Nobody needs to read them.</div></div>
-    </div>
-    <div>
-      <div class="r">AI reviewer<small>advice with evidence</small></div>
-      <div class="x">Found problem 01 and checked it against Microsoft's reference assemblies.
-        <div class="s">Never approves. A finding without a check anyone can re-run is not shown.</div></div>
-    </div>
-    <div>
-      <div class="r">AI reviewer<small>refused to decide</small></div>
-      <div class="x">Flagged problem 02 and would not judge it.
-        <div class="s">Dropping support for older tools is a product decision, not a code question.</div></div>
-    </div>
-    <div class="human">
-      <div class="r">Named owner<small>accountable</small></div>
-      <div class="x">Answers two questions and signs.
-        <div class="s">The signature is locked to this exact commit and evidence. Any new push voids it.</div></div>
-    </div>
+    <div class="m"><span id="files">238</span> files · <b>+<span id="add">1385</span></b> <i>−<span id="del">11</span></i></div>
+    <div class="by"><span>Author:</span> AI agent &nbsp; <span>Approver:</span> <b>you</b></div>
   </div>
 </section>
 
 <section>
-  <div class="kicker">Sign-off</div>
+  <div class="kicker">The problem</div>
+  <h2>It looks fine. It isn't.</h2>
+  <div class="probs">
+    <div class="prob">
+      <div class="n">01</div>
+      <h3>The feature silently skips many users.</h3>
+<pre><span class="a">+#if !NETSTANDARD2_0 && !NETFRAMEWORK</span></pre>
+      <p>Built on a false belief. Its own tests confirm the mistake.</p>
+    </div>
+    <div class="prob">
+      <div class="n">02</div>
+      <h3>It raised the minimum compiler. Nobody asked.</h3>
+<pre><span class="d">- MicrosoftCodeAnalysisVersion  4.3.0</span><span class="a">+ MicrosoftCodeAnalysisVersion  4.12.0</span></pre>
+      <p>Teams on older Visual Studio may lose the code generator.</p>
+    </div>
+  </div>
+  <div class="punch">No test catches either.<br><em>You would have signed both.</em></div>
+</section>
+
+<section>
+  <div class="kicker">The solution</div>
+  <h2>Friday, 21:00. Done by 21:05.</h2>
+  <div class="tl">
+    <div class="step m"><div class="tm">21:00</div><div class="dot"></div>
+      <div><div class="w">Machine</div><div class="x"><span id="proven">220</span> generated files verified automatically<small>You skip them.</small></div></div></div>
+    <div class="step ai"><div class="tm">21:01</div><div class="dot"></div>
+      <div><div class="w">AI reviewer</div><div class="x">Finds problem 01, with proof<small>Checked against Microsoft's own reference files.</small></div></div></div>
+    <div class="step ai"><div class="tm">21:01</div><div class="dot"></div>
+      <div><div class="w">AI reviewer</div><div class="x">Refuses to decide problem 02<small>Dropping users is a business call. It's yours.</small></div></div></div>
+    <div class="step you"><div class="tm">21:05</div><div class="dot"></div>
+      <div><div class="w">You</div><div class="x">Answer two questions. Sign. Go home.</div></div></div>
+  </div>
+  <div class="total">
+    <div><span id="files2">238</span><small>files changed</small></div>
+    <div>0<small>files you read</small></div>
+    <div>2<small>decisions you made</small></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Why it is safe</div>
+  <h2>You can sign without reading every line.</h2>
+  <div class="rules">
+    <div class="rule"><div class="ic">✋</div><h3>The AI never approves</h3><p>It has no merge button. Only a named person signs.</p></div>
+    <div class="rule"><div class="ic">🔁</div><h3>No proof, no claim</h3><p>Every finding comes with a check you can run again yourself.</p></div>
+    <div class="rule"><div class="ic">⚖️</div><h3>It refuses business decisions</h3><p>Dependencies, compatibility and security always go to you.</p></div>
+    <div class="rule"><div class="ic">🔒</div><h3>Your signature is locked</h3><p>Tied to this exact code. Any new change voids it.</p></div>
+  </div>
+</section>
+
+<section>
+  <div class="kicker">Your sign-off</div>
   <h2>Two questions instead of 238 files.</h2>
   <div class="sign">
     <div class="meta mono" id="meta">loading…</div>
@@ -168,14 +173,14 @@ footer{padding:20px 0 60px;color:var(--muted);font-size:13px}
       </div>
     </div>
     <div class="qrow">
-      <div class="ql">02 · Do we drop support for older Visual Studio and .NET SDKs?</div>
+      <div class="ql">02 · Drop support for older Visual Studio and .NET SDKs?</div>
       <div class="choices">
         <label><input type="radio" name="R1" value="Revert it"><span>No, revert it</span></label>
-        <label><input type="radio" name="R1" value="Split into own PR"><span>Decide in a separate PR</span></label>
+        <label><input type="radio" name="R1" value="Split into own PR"><span>Decide separately</span></label>
         <label><input type="radio" name="R1" value="Accept the support drop"><span>Yes, drop them</span></label>
       </div>
     </div>
-    <div class="gaps"><b>Not checked, and you accept that:</b> the test suite was not run, and no real netstandard2.0 project was compiled.</div>
+    <div class="gaps">Not checked: the test suite was not run. You accept that risk by signing.</div>
     <div class="nm"><input id="owner" placeholder="Your full name" autocomplete="name"><button id="sign" disabled>Sign</button></div>
     <div class="why" id="why"></div>
     <div class="log" id="log"></div>
@@ -194,7 +199,7 @@ let caseData;
 async function main(){
   caseData = await (await fetch("/api/case/2297")).json();
   const k = caseData.checks;
-  $("#files").textContent = k.files_total;
+  $("#files").textContent = $("#files2").textContent = k.files_total;
   $("#add").textContent = k.lines[0];
   $("#del").textContent = k.lines[1];
   $("#proven").textContent = k.checks.find(x => x.id === "snapshot-shape").passed;
