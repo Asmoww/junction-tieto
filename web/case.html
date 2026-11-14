@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Case File</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/case.css">
+</head>
+<body>
+<main class="wrap" id="app"><p class="muted" style="padding:80px 0">Loading case…</p></main>
+<footer class="wrap"><a href="/cases.html">All reviewed changes</a> · <a href="/">Why this exists</a></footer>
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LBL = {"weak-evidence":"weak test","refused":"AI refused","contested":"AI found"};
+const pill = s => `<span class="pill p-${s}">${LBL[s] || s}</span>`;
+const OPTIONS = {
+  refused: ["Accept", "Revert it", "Split into own PR"],
+  contested: ["Fix before merge", "Accept as is"],
+};
+const id = new URLSearchParams(location.search).get("id") || "2297";
+let C;
+
+function quote(lines){
+  if (!lines?.length) return "";
+  return `<pre>${lines.map(l => {
+    const c = l.startsWith("- ") ? "d" : l.startsWith("+ ") ? "a" : "";
+    return `<span class="${c}">${esc(l)}</span>`;
+  }).join("")}</pre>`;
+}
+
+function decisionCard(d){
+  const ev = (d.evidence || []).map(e => `<div class="ev"><b>Machine check</b> ${esc(e.result)}</div>`).join("");
+  return `<div class="dcard">
+    <div class="row">${pill(d.status)}<span class="mono">${d.id} · ${esc(d.file.split("/").pop())}</span></div>
+    <h3>${esc(d.title)}</h3>
+    <p>${esc(d.oneliner)}</p>
+    ${quote(d.quote)}
+    ${ev}
+    ${d.seen_in?.length > 1 ? `<div class="ev"><b>Pattern</b> Identical change in ${d.seen_in.length} agent branches: ${d.seen_in.map(esc).join(", ")}</div>` : ""}
+    <div class="qq">${esc(d.question)}</div>
+    <div class="choices">${OPTIONS[d.status].map(o => `<label><input type="radio" name="${d.id}" value="${esc(o)}"><span>${esc(o)}</span></label>`).join("")}</div>
+    <details><summary>Why this reached you</summary><div class="small">
+      Routed by: ${esc(d.routed_by)}.${d.would_be_wrong_if ? `<br>Would be wrong if: ${esc(d.would_be_wrong_if)}` : ""}</div></details>
+  </div>`;
+}
+
+async function main(){
+  C = await (await fetch(`/api/case/${id}`)).json();
+  if (C.error) { $("#app").innerHTML = `<p style="padding:80px 0">${esc(C.error)}</p>`; return; }
+  const s = C.stats, req = C.requirement;
+  document.title = `Case ${C.id} · ${req.title}`;
+  const read = s.files - s.files_proven;
+  $("#app").innerHTML = `
+  <section class="first">
+    <div class="kicker">${esc(req.id)} · ${esc(C.branch)} · written by an AI agent</div>
+    <h1>${esc(req.title)}</h1>
+    <p class="lead">${esc(C.story)}</p>
+    <div class="stats">
+      <div>${s.files}<small>files changed</small></div>
+      <div>${s.files_proven}<small>proven by machine</small></div>
+      <div class="you">${s.decisions}<small>decisions for you</small></div>
+      <div>${s.findings_dropped}<small>AI claims dropped</small></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Your decisions</h2>
+    ${C.decisions.map(decisionCard).join("")}
+  </section>
+
+  <section>
+    <h2>Handled without you</h2>
+    <div class="list">
+      ${C.proof && C.proof.files.length ? `<div>${pill("proven")}<div>${esc(C.proof.title)}<small>No AI involved. Same answer on every run.</small></div></div>` : ""}
+      ${C.handled.map(h => `<div>${pill(h.status)}<div>${esc(h.title)}<small>${esc(h.oneliner)}</small></div></div>`).join("")}
+    </div>
+  </section>
+
+  <section>
+    <h2>Not checked</h2>
+    <ul class="gaps">${C.not_checked.map(n => `<li>${esc(n)}</li>`).join("")}</ul>
+    <p class="small">${s.findings_dropped
+      ? `${s.findings_dropped} AI claims were deleted because their quoted code was not in the diff.`
+      : `Every AI claim quoted code that exists in the diff. Claims that do not are deleted before you see them.`}</p>
+  </section>
+
+  <section>
+    <h2>Sign-off</h2>
+    <div class="sign">
+      <div class="mono muted">${esc(C.id)} → ${esc(req.id)} · commit ${C.head_commit.slice(0,8)} · evidence ${C.evidence_hash}</div>
+      <p class="small">By signing you own this change, including what was not checked above.</p>
+      <div class="nm"><input id="owner" placeholder="Your full name" autocomplete="name"><button id="sign" disabled>Sign</button></div>
+      <div class="why" id="why"></div>
+      <div class="log" id="log"></div>
+    </div>
+    <p class="small muted">Reviewer: ${esc(C.reviewer.model)} model · ${C.reviewer.duration_s}s · deterministic checks first, AI second, quote verifier last.</p>
+  </section>`;
+  document.addEventListener("input", update); document.addEventListener("change", update); update();
+  $("#sign").onclick = sign;
+  loadLog();
+}
+
+const pick = n => document.querySelector(`input[name="${n}"]:checked`)?.value;
+
+function update(){
+  const miss = C.decisions.filter(d => !pick(d.id)).map(d => d.id);
+  if ($("#owner").value.trim().split(/\s+/).length < 2) miss.push("your full name");
+  $("#sign").disabled = miss.length > 0;
+  $("#why").textContent = miss.length ? "Still needed: " + miss.join(", ") : "";
+}
+
+async function sign(){
+  const answers = Object.fromEntries(C.decisions.map(d => [d.id, pick(d.id)]));
+  const clean = Object.values(answers).every(a => a === "Accept" || a === "Accept as is");
+  const res = await fetch("/api/signoff", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({
+    change: C.id, evidence_hash: C.evidence_hash, owner: $("#owner").value, answers,
+    decision: clean ? "accept" : "accept-with-conditions", residual_risk: C.not_checked.join("; ")})});
+  const j = await res.json();
+  $("#why").innerHTML = res.ok ? "Signed. Your name is on this change." : `<span class="warn">${esc(j.error)}</span>`;
+  loadLog();
+}
+
+async function loadLog(){
+  const rows = (await (await fetch("/api/signoffs")).json()).filter(r => r.change === C.id);
+  $("#log").innerHTML = rows.slice(-5).reverse().map(x =>
+    `<div><b>${esc(x.owner)}</b><span>${esc(x.decision)}</span><span class="mono muted">${esc(x.at)} · ${esc(x.evidence_hash)}</span></div>`).join("");
+}
+main();
+</script>
+</body>
+</html>

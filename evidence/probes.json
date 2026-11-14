@@ -1,0 +1,6 @@
+[
+  {"match": "netstandard|NETFRAMEWORK|\\.NET Framework",
+   "label": "Reference assemblies define ExcludeFromCodeCoverageAttribute (netstandard 2.0 and .NET Framework 4.6.2), usable on classes",
+   "result": "netstandard.dll: DEFINED, targets Class|Struct|Constructor|Method|Property|Event; System.dll (net462): DEFINED, same targets",
+   "rerun": "python evidence/attr_check.py <netstandard.dll> <System.dll>"}
+]

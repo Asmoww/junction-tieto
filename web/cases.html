@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reviewed Changes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/case.css">
+</head>
+<body>
+<main class="wrap">
+  <section class="first">
+    <div class="kicker">The reviewer, run on every agent change</div>
+    <h1>Four AI-written changes. Each one ends with a person signing.</h1>
+    <div class="stats" id="tot"></div>
+  </section>
+  <section><div class="cards" id="cards"></div></section>
+</main>
+<footer class="wrap"><a href="/">Why this exists</a></footer>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+(async () => {
+  const cases = await (await fetch("/api/cases")).json();
+  const sum = k => cases.reduce((a, c) => a + c.stats[k], 0);
+  document.getElementById("tot").innerHTML = `
+    <div>${sum("files")}<small>files changed</small></div>
+    <div>${sum("files_proven")}<small>proven by machine</small></div>
+    <div class="you">${sum("decisions")}<small>decisions for people</small></div>
+    <div>${sum("findings_dropped")}<small>AI claims dropped</small></div>`;
+  document.getElementById("cards").innerHTML = cases.map(c => `
+    <a class="ccard" href="/case.html?id=${c.id}">
+      <div class="kicker" style="margin:0">REQ-${esc(c.id)} · ${esc(c.branch)}</div>
+      <h3>${esc(c.title)}</h3>
+      <p>${esc(c.story)}</p>
+      <div class="nums"><span><b>${c.stats.files}</b>files</span><span><b>${c.stats.files_proven}</b>proven</span>
+        <span class="you"><b>${c.stats.decisions}</b>decisions for you</span></div>
+    </a>`).join("");
+})();
+</script>
+</body>
+</html>

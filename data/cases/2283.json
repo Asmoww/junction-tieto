@@ -1,0 +1,166 @@
+{
+  "id": "2283",
+  "requirement": {
+    "id": "REQ-2283",
+    "title": "Generator and analyzer crash with IndexOutOfRangeException on a closed generic struct from a referenced assembly",
+    "source": "https://github.com/MessagePack-CSharp/MessagePack-CSharp/issues/2283",
+    "text": "#### Bug description\n\nBoth `MessagePackGenerator` (CS8785) and `MsgPack00xMessagePackAnalyzer` (AD0001) throw `IndexOutOfRangeException` when a `[MessagePackObject]` type has a member whose type is a **closed generic value type defined in a referenced assembly**.\n\nBecause the generator then \"will not contribute to the output\", the compiling assembly silently ends up with **no generated resolver at all**. It is only a warning, so a normal build looks fine, but trimmed and NativeAOT apps fail at runtime. In our case three assemblies of a large app had been shipping without a resolver across two releases before we noticed.\n\n#### Repro steps\n\nTwo projects. `lib`:\n\n```csharp\nusing MessagePack;\nnamespace Lib;\n\n[MessagePackObject]\npublic partial record struct Item<T>([property: Key(0)] string Key);\n```\n\n`app`, with a `ProjectReference` to `lib`:\n\n```csharp\nusing MessagePack; using Lib;\nnamespace App;\n\n[MessagePackObject]\npublic sealed partial record Cmd([property: Key(0)] string Scope)\n{\n    [Key(1)] public Item<int> Member { get; init; }\n}\n```\n\nThen `dotnet build` on `app`. Both projects are in the attached `mp-repro.zip`.\n\n#### Expected behavior\n\nA clean build, with a generated resolver in `app`.\n#### Actual behavior\n\n```\nCSC : warning CS8785: Generator 'MessagePackGenerator' failed to generate source. It will not\ncontribute to the output and compilation errors may occur as a result. Exception was of type\n'IndexOutOfRangeException' with message 'Index was outside the bounds of the array.'.\nCSC : warning AD0001: Analyzer 'MessagePack.SourceGenerator.Analyzers.MsgPack00xMessagePackAnalyzer'\nthrew an exception of type 'System.IndexOutOfRangeException' with message 'Index was outside the\nbounds of the array.'.\n```\n\n`app.dll` contains no `GeneratedMessagePackResolver`.\n\n- Version used: MessagePack 3.1.8\n- Runtime: .NET 10 (SDK 10.0.204), Windows 11\n\n#### Additional context\n\n**What triggers it.** `Item` is declared in `lib`, `Cmd` in `app`:\n\n| `Item` declared as | result |\n|---|---|\n| `record struct Item<T>` | **crash** |\n| `struct Item<T>` | **crash** |\n| `struct Item` | ok |\n| `record struct Item` | ok |\n| `class Item<T>` | ok |\n| `record class Item<T>` | ok |\n\nSo it needs all three of: **generic**, **value type**, **from a referenced assembly**. Moving the identical `Item<T>` declaration into `app` itself makes the crash disappear, which is what makes this specific to metadata symbols.\n**Stack trace.**\n\n```\nSystem.IndexOutOfRangeException: Index was outside the bounds of the array.\n   at TypeCollector.GetObjectInfo(INamedTypeSymbol formattedType, ISymbol callerSymbol)\n   at TypeCollector.CollectGeneric(INamedTypeSymbol type, ISymbol callerSymbol) in TypeCollector.cs:line 661\n   at TypeCollector.CollectCore(ITypeSymbol typeSymbol, ISymbol callerSymbol) in TypeCollector.cs:line 371\n   at TypeCollector.GetObjectInfo(INamedTypeSymbol formattedType, ISymbol callerSymbol) in TypeCollector.cs:line 1062\n   at TypeCollector.CollectCore(ITypeSymbol typeSymbol, ISymbol callerSymbol) in TypeCollector.cs:line 386\n   at TypeCollector.Collect() in TypeCollector.cs:line 300\n   at MsgPack00xMessagePackAnalyzer.AnalyzeSymbol(SymbolAnalysisContext, ReferenceSymbols, AnalyzerOptions) in MsgPack00xMessagePackAnalyzer.cs:line 431\n```\n\n`CollectGeneric` line 661 is the closed-generic branch that calls `GetObjectInfo` directly:\n\n```csharp\nelse\n{\n    // NOTE: ... closed generic types such as `Foo<string>` are not registered as a formatter.\n    this.GetObjectInfo(type, callerSymbol);\n```\n\nso `GetObjectInfo` runs against a type that has no syntax. Several diagnostic paths inside it index `DeclaringSyntaxReferences[0]` directly (lines 735, 1009, 1101) instead of using `FirstOrDefault()` the way the neighbouring `GetIdentifierLocation` / `GetLocation` / `GetParameterListLocation` helpers already do, and that collection is empty for a metadata symbol. I did not narrow down which of the three fires.\n\n**Getting the stack trace.** Console output truncates the exceptio"
+  },
+  "branch": "ju26-issue-2283",
+  "base_commit": "524fd55e14ff38875c5f24f4dd3b4ea744f4d883",
+  "head_commit": "9df83c38409c8bfad0517aebffe48211eda4a5b4",
+  "story": "The change stops the crash on member types from referenced assemblies. It removes two direct indexes into DeclaringSyntaxReferences[0], and it now silently drops every analyzer diagnostic whose location is not in a source file of the current compilation. It also adds docs and three tests that compile a library to metadata and reference it.",
+  "stats": {
+    "files": 5,
+    "added": 227,
+    "removed": 5,
+    "files_proven": 0,
+    "decisions": 3,
+    "findings_kept": 6,
+    "findings_dropped": 0
+  },
+  "proof": null,
+  "decisions": [
+    {
+      "id": "R1",
+      "status": "refused",
+      "severity": "high",
+      "title": "Dependency change in Directory.Packages.props",
+      "oneliner": "Dependency and toolchain versions decide which users can build and run the package.",
+      "file": "Directory.Packages.props",
+      "quote": [
+        "-     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.3.0</MicrosoftCodeAnalysisVersion>",
+        "-     <PackageVersion Include=\"PolySharp\" Version=\"1.14.1\" />",
+        "+     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.12.0</MicrosoftCodeAnalysisVersion>",
+        "+     <PackageVersion Include=\"PolySharp\" Version=\"1.15.0\" />"
+      ],
+      "question": "Accept this dependency or toolchain change?",
+      "routed_by": "policy rule 'dependency': the reviewer may not decide this",
+      "seen_in": [
+        "ju26-issue-2283",
+        "ju26-issue-2234",
+        "ju26-issue-2129",
+        "ju26-issue-2297"
+      ]
+    },
+    {
+      "id": "F1",
+      "severity": "medium",
+      "title": "Filter also drops locationless diagnostics for local types",
+      "oneliner": "Every analyzer diagnostic now passes through the filter. Any diagnostic with no location, including ones about local types, is silently dropped.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "this.reportDiagnostic = reportAnalyzerDiagnostic is null ? null : diagnostic => ReportIfLocatedInCompilation(reportAnalyzerDiagnostic, diagnostic);",
+        "if (diagnostic.Location.IsInSource && this.compilation.ContainsSyntaxTree(diagnostic.Location.SourceTree))"
+      ],
+      "kind": "defect",
+      "requirement_part": "Generator and analyzer crash with IndexOutOfRangeException",
+      "would_be_wrong_if": "No existing TypeCollector diagnostic is ever created with a null location (Location.None) for a type declared in the current compilation.",
+      "question": "Is it acceptable that diagnostics with no location, about types in this project, now disappear without any notice?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "title": "Third indexing site (line 735) not visibly fixed",
+      "oneliner": "The issue names three [0] index sites. The diff changes two, and the site near line 735 is not in the diff.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "private static Location? GetPropertyIdentifierLocation(IPropertySymbol property) => (property.DeclaringSyntaxReferences.FirstOrDefault()?.GetSyntax() as PropertyDeclarationSyntax)?.Identifier.GetLocation();"
+      ],
+      "kind": "defect",
+      "requirement_part": "index `DeclaringSyntaxReferences[0]` directly (lines 735, 1009, 1101)",
+      "would_be_wrong_if": "The line-735 site was already safe in this version, or the line numbers cited in the issue refer to the code changed here.",
+      "question": "Has anyone checked that no `DeclaringSyntaxReferences[0]` is left elsewhere in TypeCollector?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    }
+  ],
+  "handled": [
+    {
+      "id": "F3",
+      "severity": "medium",
+      "title": "Generator crash fix not explained by the diff",
+      "oneliner": "The filter only wraps the analyzer callback, and the generator probably passes null for it. The generator's CS8785 is fixed only if the edited ?.Invoke lines are what it hit.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "this.reportDiagnostic?.Invoke(Diagnostic.Create(MsgPack00xMessagePackAnalyzer.BothStringAndIntKeyAreNull, GetPropertyIdentifierLocation(item), formattedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), item.Name));"
+      ],
+      "kind": "note",
+      "requirement_part": "Both `MessagePackGenerator` (CS8785) and `MsgPack00xMessagePackAnalyzer` (AD0001) throw",
+      "would_be_wrong_if": "The generator also passes a non-null reportAnalyzerDiagnostic. In that case the edited lines would explain the generator crash too.",
+      "question": "Did the new tests fail on the generator path before this fix?",
+      "evidence": [],
+      "status": "supported",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F4",
+      "severity": "medium",
+      "title": "Analyzer coverage depends on what the verifier runs",
+      "oneliner": "The tests use a source-generator verifier. If it does not run MsgPack00xMessagePackAnalyzer, the AD0001 crash is never exercised.",
+      "file": "tests/MessagePack.SourceGenerator.Tests/GenericsFormatterTests.cs",
+      "quote": [
+        "// Run the analyzers and the generator, failing on any diagnostic (the defect surfaced as AD0001 and CS8785).",
+        "var test = new VerifyCS.Test(ReferencesSet.MessagePack)"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "MsgPack00xMessagePackAnalyzer (AD0001) throw",
+      "would_be_wrong_if": "CSharpSourceGeneratorVerifier registers the MessagePack analyzers (this fact is outside the diff).",
+      "question": "Did these tests fail with AD0001 before the fix?",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F5",
+      "severity": "low",
+      "title": "Docs claim the defining assembly reports problems",
+      "oneliner": "The new docs say the defining project reports these problems. NuGet packages built without the MessagePack analyzer report nothing, and the consumer gets a formatter with no warning.",
+      "file": "README.md",
+      "quote": [
+        "Diagnostics about the members of such a type are reported by the assembly that defines it rather than by the consuming project, so any problem must be fixed there."
+      ],
+      "kind": "false-claim",
+      "requirement_part": "",
+      "would_be_wrong_if": "Every assembly that defines a [MessagePackObject] type is always built with the MessagePack analyzer enabled.",
+      "question": "Do you want this design note in the README and the MsgPack004 docs, since the bug fix did not ask for it?",
+      "evidence": [],
+      "status": "supported",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F6",
+      "severity": "low",
+      "title": "Unkeyed-member test asserts the silencing",
+      "oneliner": "The test passes because problems with the referenced type are dropped. It does not check that the formatter generated for an invalid type is correct.",
+      "file": "tests/MessagePack.SourceGenerator.Tests/GenericsFormatterTests.cs",
+      "quote": [
+        "public async Task ClosedGenericStruct_FromMetadataReference_UnkeyedMember()"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "",
+      "would_be_wrong_if": "Silently skipping the unkeyed member is the intended behavior for metadata types.",
+      "question": "",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    }
+  ],
+  "dropped": [],
+  "not_checked": [
+    "The test suite was not run (no .NET SDK on the review host).",
+    "Whether any other `DeclaringSyntaxReferences[0]` or `Locations[0]` index remains elsewhere in TypeCollector or the generator.",
+    "Which callers pass a non-null reportAnalyzerDiagnostic (generator or analyzer only).",
+    "Whether any existing diagnostic uses Location.None on purpose for in-compilation types."
+  ],
+  "reviewer": {
+    "duration_s": 38.9,
+    "cost_usd": 0.788296,
+    "model": "default",
+    "prompt_chars": 19148
+  }
+}

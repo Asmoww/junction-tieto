@@ -13,9 +13,7 @@ PORT = int(os.environ.get("PORT", "5203"))
 
 
 def load_case(change):
-    review = json.loads((ROOT / "casefile" / f"review-{change}.json").read_text())
-    checks = json.loads((DATA / f"{change}.checks.json").read_text())
-    case = {"review": review, "checks": checks}
+    case = json.loads((DATA / "cases" / f"{change}.json").read_text())
     # The sign-off binds to this exact evidence: if the commit or any finding changes, the hash changes.
     blob = json.dumps(case, sort_keys=True).encode()
     case["evidence_hash"] = hashlib.sha256(blob).hexdigest()[:16]
@@ -50,6 +48,10 @@ class Handler(SimpleHTTPRequestHandler):
                 return self.send_json(load_case(change))
             except FileNotFoundError:
                 return self.send_json({"error": "unknown change"}, 404)
+        if self.path == "/api/cases":
+            cases = [json.loads(p.read_text()) for p in sorted((DATA / "cases").glob("*.json"))]
+            return self.send_json([{"id": c["id"], "title": c["requirement"]["title"], "branch": c["branch"],
+                                    "stats": c["stats"], "story": c["story"]} for c in cases])
         if self.path == "/api/signoffs":
             return self.send_json(read_log())
         return super().do_GET()
@@ -73,9 +75,9 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"error": "Evidence changed since you loaded it. Reload and review again."}, 409)
         entry = {
             "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
-            "change": case["review"]["change"]["id"],
-            "requirement": case["review"]["change"]["requirement"]["id"],
-            "commit": case["checks"]["head_commit"],
+            "change": case["id"],
+            "requirement": case["requirement"]["id"],
+            "commit": case["head_commit"],
             "evidence_hash": case["evidence_hash"],
             "owner": owner,
             "decision": decision,

@@ -187,6 +187,12 @@ footer{padding:20px 0 60px;color:var(--muted);font-size:13px}
   </div>
 </section>
 
+<section>
+  <div class="kicker">The reference implementation</div>
+  <h2>The same reviewer on four real agent changes.</h2>
+  <p class="lead"><a href="/cases.html" style="color:var(--ink)">See every case file →</a></p>
+</section>
+
 </main>
 <footer class="wrap">Reference implementation · Junction 2026, Earned Trust in AI Code · real agent-written branch <span class="mono">ju26-issue-2297</span> of MessagePack-CSharp</footer>
 
@@ -198,12 +204,12 @@ let caseData;
 
 async function main(){
   caseData = await (await fetch("/api/case/2297")).json();
-  const k = caseData.checks;
-  $("#files").textContent = $("#files2").textContent = k.files_total;
-  $("#add").textContent = k.lines[0];
-  $("#del").textContent = k.lines[1];
-  $("#proven").textContent = k.checks.find(x => x.id === "snapshot-shape").passed;
-  $("#meta").textContent = `PR-2297 → REQ-2297 · commit ${k.head_commit.slice(0,8)} · evidence ${caseData.evidence_hash}`;
+  const k = caseData.stats;
+  $("#files").textContent = $("#files2").textContent = k.files;
+  $("#add").textContent = k.added;
+  $("#del").textContent = k.removed;
+  $("#proven").textContent = k.files_proven;
+  $("#meta").textContent = `PR-2297 → REQ-2297 · commit ${caseData.head_commit.slice(0,8)} · evidence ${caseData.evidence_hash}`;
   document.addEventListener("input", update); document.addEventListener("change", update); update();
   loadLog();
 }
