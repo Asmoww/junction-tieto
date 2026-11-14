@@ -10,21 +10,48 @@
       "text": "I would like all generated code to be decorated with ExcludeFromCodeCoverage attribute. I do not feel like a setting is needed, but setting would be fine to have too.",
       "intent": "Generated MessagePack code should not skew users' code coverage numbers.",
       "acceptance": [
-        {"id": "REQ-2297.1", "text": "Every generated formatter and resolver carries [ExcludeFromCodeCoverage]."},
-        {"id": "REQ-2297.2", "text": "Holds for every target framework a consumer can build the generated code for."},
-        {"id": "REQ-2297.3", "text": "Generated code still compiles; no change to serialization behaviour."}
+        {
+          "id": "REQ-2297.1",
+          "text": "Every generated formatter and resolver carries [ExcludeFromCodeCoverage]."
+        },
+        {
+          "id": "REQ-2297.2",
+          "text": "Holds for every target framework a consumer can build the generated code for."
+        },
+        {
+          "id": "REQ-2297.3",
+          "text": "Generated code still compiles; no change to serialization behaviour."
+        }
       ]
     },
     "reviewer": "AI reviewer (Claude), run 2026-11-14, deterministic checks + reasoning"
   },
-
   "story": [
-    {"claim": "All generated formatters and resolvers are decorated with [ExcludeFromCodeCoverage].", "where": "README.md", "verdict": "partly-true", "ref": "F1"},
-    {"claim": "The attribute is only emitted where it is available (not netstandard2.0 or .NET Framework).", "where": "README.md, test comment", "verdict": "false", "ref": "F1"},
-    {"claim": "Tests verify every generated type is excluded and correctly guarded.", "where": "CodeCoverageExclusionTests.cs", "verdict": "misleading", "ref": "F3"},
-    {"claim": "(not mentioned) Raises the analyzer's Roslyn floor and bumps PolySharp.", "where": "Directory.Packages.props", "verdict": "unstated", "ref": "R1"}
+    {
+      "claim": "All generated formatters and resolvers are decorated with [ExcludeFromCodeCoverage].",
+      "where": "README.md",
+      "verdict": "partly-true",
+      "ref": "F1"
+    },
+    {
+      "claim": "The attribute is only emitted where it is available (not netstandard2.0 or .NET Framework).",
+      "where": "README.md, test comment",
+      "verdict": "false",
+      "ref": "F1"
+    },
+    {
+      "claim": "Tests verify every generated type is excluded and correctly guarded.",
+      "where": "CodeCoverageExclusionTests.cs",
+      "verdict": "misleading",
+      "ref": "F3"
+    },
+    {
+      "claim": "(not mentioned) Raises the analyzer's Roslyn floor and bumps PolySharp.",
+      "where": "Directory.Packages.props",
+      "verdict": "unstated",
+      "ref": "R1"
+    }
   ],
-
   "findings": [
     {
       "id": "F1",
@@ -34,13 +61,33 @@
       "title": "The framework guard rests on a false premise",
       "summary": "Every attribute is wrapped in #if !NETSTANDARD2_0 && !NETFRAMEWORK because the agent believed the attribute does not exist there. It does: both reference assemblies define ExcludeFromCodeCoverageAttribute and allow it on classes. Consumers targeting netstandard2.0 or .NET Framework get no exclusion, the opposite of the requirement, and the README tells users something untrue.",
       "evidence": [
-        {"kind": "machine", "label": "netstandard 2.0 reference assembly", "result": "DEFINED, AttributeTargets = Class, Struct, Constructor, Method, Property, Event", "rerun": "python evidence/attr_check.py netstandard.library/2.0.3/build/netstandard2.0/ref/netstandard.dll"},
-        {"kind": "machine", "label": ".NET Framework 4.6.2 reference assembly (System.dll)", "result": "DEFINED, AttributeTargets = Class, Struct, Constructor, Method, Property, Event", "rerun": "python evidence/attr_check.py microsoft.netframework.referenceassemblies.net462/1.0.3/build/.NETFramework/v4.6.2/System.dll"},
-        {"kind": "diff", "label": "Guard inserted 402 times across 220 snapshots", "result": "#if !NETSTANDARD2_0 && !NETFRAMEWORK"}
+        {
+          "kind": "machine",
+          "label": "netstandard 2.0 reference assembly",
+          "result": "DEFINED, AttributeTargets = Class, Struct, Constructor, Method, Property, Event",
+          "rerun": "python evidence/attr_check.py netstandard.library/2.0.3/build/netstandard2.0/ref/netstandard.dll"
+        },
+        {
+          "kind": "machine",
+          "label": ".NET Framework 4.6.2 reference assembly (System.dll)",
+          "result": "DEFINED, AttributeTargets = Class, Struct, Constructor, Method, Property, Event",
+          "rerun": "python evidence/attr_check.py microsoft.netframework.referenceassemblies.net462/1.0.3/build/.NETFramework/v4.6.2/System.dll"
+        },
+        {
+          "kind": "diff",
+          "label": "Guard inserted 402 times across 220 snapshots",
+          "result": "#if !NETSTANDARD2_0 && !NETFRAMEWORK"
+        }
       ],
       "would_be_wrong_if": "The guard exists for a reason the agent did not write down, e.g. a consumer project that defines its own polyfill of the attribute and gets a type clash. We found no such case in the repository, but did not compile against one.",
       "suggestion": "Remove the #if guard from the 6 templates, regenerate snapshots, fix the README sentence and the test that asserts the guard.",
-      "owner_question": "Should netstandard2.0 / .NET Framework consumers get coverage exclusion? (Requirement says all generated code.)"
+      "owner_question": "Should netstandard2.0 / .NET Framework consumers get coverage exclusion? (Requirement says all generated code.)",
+      "short_title": "Guard is based on a false premise",
+      "oneliner": "The attribute exists on netstandard2.0 and .NET Framework, so those users silently miss out.",
+      "options": [
+        "Fix before merge",
+        "Keep as is"
+      ]
     },
     {
       "id": "R1",
@@ -50,12 +97,27 @@
       "title": "Unrequested toolchain bump: analyzer Roslyn 4.3.0 → 4.12.0, PolySharp 1.14.1 → 1.15.0",
       "summary": "No acceptance criterion needs this. The Roslyn floor decides which Visual Studio and .NET SDK versions can load the analyzer, so raising it can silently drop users on older tooling. The identical edit appears in all four agent branches (2283, 2234, 2129, 2297), which points to the agent's build environment rather than this change.",
       "evidence": [
-        {"kind": "diff", "label": "Directory.Packages.props", "result": "- 4.3.0 / + 4.12.0 (IsAnalyzerProject)   - PolySharp 1.14.1 / + 1.15.0"},
-        {"kind": "machine", "label": "Same hunk in other agent branches", "result": "ju26-issue-2283, ju26-issue-2234, ju26-issue-2129: identical", "rerun": "for b in 2283 2234 2129 2297; do git diff origin/master...origin/ju26-issue-$b -- Directory.Packages.props | grep '^[+-] ' | md5sum; done"}
+        {
+          "kind": "diff",
+          "label": "Directory.Packages.props",
+          "result": "- 4.3.0 / + 4.12.0 (IsAnalyzerProject)   - PolySharp 1.14.1 / + 1.15.0"
+        },
+        {
+          "kind": "machine",
+          "label": "Same hunk in other agent branches",
+          "result": "ju26-issue-2283, ju26-issue-2234, ju26-issue-2129: identical",
+          "rerun": "for b in 2283 2234 2129 2297; do git diff origin/master...origin/ju26-issue-$b -- Directory.Packages.props | grep '^[+-] ' | md5sum; done"
+        }
       ],
       "refusal_reason": "Policy P4: dependency and toolchain floors are product-compatibility decisions. The reviewer can describe the blast radius; it may not judge whether it is acceptable.",
-      "options": ["Revert the hunk (keeps this PR in scope)", "Split into its own PR with a release note", "Accept here and record the support drop"],
-      "owner_question": "Do we drop support for tooling older than Roslyn 4.12 (VS 2022 17.12)?"
+      "options": [
+        "Revert it",
+        "Split into own PR",
+        "Accept the support drop"
+      ],
+      "owner_question": "Do we drop support for tooling older than Roslyn 4.12 (VS 2022 17.12)?",
+      "short_title": "Unrequested toolchain upgrade",
+      "oneliner": "Roslyn 4.3 → 4.12 may drop users on older Visual Studio. Not in the requirement."
     },
     {
       "id": "F2",
@@ -65,10 +127,20 @@
       "title": "Side fix in TransformUtilities is necessary, not drift",
       "summary": "For nested generic types the old code wrote '{' with no line break, so the next line started '{\\tinternal sealed class'. A preprocessor directive must start its own line, so inserting '#if' there would not compile. The one-character change makes room for it. It explains both snapshot exceptions.",
       "evidence": [
-        {"kind": "diff", "label": "TransformUtilities.cs", "result": "writer(anyConstraints ? \"{\" : \" {\\r\\n\")  →  writer(anyConstraints ? \"{\\r\\n\" : \" {\\r\\n\")"},
-        {"kind": "machine", "label": "Snapshot exceptions", "result": "2 of 222, both in GenericDataTypeWithPrivateMember, both a brace line break"}
+        {
+          "kind": "diff",
+          "label": "TransformUtilities.cs",
+          "result": "writer(anyConstraints ? \"{\" : \" {\\r\\n\")  →  writer(anyConstraints ? \"{\\r\\n\" : \" {\\r\\n\")"
+        },
+        {
+          "kind": "machine",
+          "label": "Snapshot exceptions",
+          "result": "2 of 222, both in GenericDataTypeWithPrivateMember, both a brace line break"
+        }
       ],
-      "would_be_wrong_if": "Another code path relies on the brace staying on the same line. Not checked by running the generator."
+      "would_be_wrong_if": "Another code path relies on the brace staying on the same line. Not checked by running the generator.",
+      "short_title": "Necessary side fix",
+      "oneliner": "One-character brace fix lets the attribute compile in nested generics."
     },
     {
       "id": "F3",
@@ -78,34 +150,143 @@
       "title": "The agent's tests confirm its own mistake",
       "summary": "ExcludeAttributeIsGuardedForTargetsWhereItIsUnavailable asserts that every attribute is wrapped in the guard. It would pass with the bug and fail on the fix. The tests run the generator once, for the default target framework only, so nothing checks a netstandard2.0 consumer.",
       "evidence": [
-        {"kind": "diff", "label": "CodeCoverageExclusionTests.cs", "result": "// The attribute is not available on netstandard2.0 or .NET Framework, so it is only emitted where it exists."}
+        {
+          "kind": "diff",
+          "label": "CodeCoverageExclusionTests.cs",
+          "result": "// The attribute is not available on netstandard2.0 or .NET Framework, so it is only emitted where it exists."
+        }
       ],
-      "would_be_wrong_if": "Other test projects compile the generated code for netstandard2.0. That would show compilation, not exclusion."
+      "would_be_wrong_if": "Other test projects compile the generated code for netstandard2.0. That would show compilation, not exclusion.",
+      "short_title": "Agent's tests confirm its own mistake",
+      "oneliner": "The guard test passes with the bug and would fail on the fix."
     }
   ],
-
   "proven": [
-    {"id": "P1", "requirement": "REQ-2297.1", "check": "snapshot-shape", "title": "220 of 222 snapshots add only the guard and attribute lines, and remove nothing"},
-    {"id": "P2", "requirement": "REQ-2297.1", "check": "template-pairs", "title": "All 6 T4 templates change together with their generated C# (9 = 9 attribute insertions)"},
-    {"id": "P3", "requirement": "REQ-2297.1", "check": "coverage-of-kinds", "title": "Every generator template kind is covered: formatter, string-key formatter, enum, union, resolver, composite resolver"}
+    {
+      "id": "P1",
+      "requirement": "REQ-2297.1",
+      "check": "snapshot-shape",
+      "title": "220 of 222 snapshots add only the guard and attribute lines, and remove nothing"
+    },
+    {
+      "id": "P2",
+      "requirement": "REQ-2297.1",
+      "check": "template-pairs",
+      "title": "All 6 T4 templates change together with their generated C# (9 = 9 attribute insertions)"
+    },
+    {
+      "id": "P3",
+      "requirement": "REQ-2297.1",
+      "check": "coverage-of-kinds",
+      "title": "Every generator template kind is covered: formatter, string-key formatter, enum, union, resolver, composite resolver"
+    }
   ],
-
   "not_checked": [
-    {"what": "Running the test suite on the base and head commits", "why": "No .NET SDK on the review host. Planned: run in CI and show that the new tests also pass on base."},
-    {"what": "A coverage tool (coverlet) honouring the attribute end to end", "why": "Needs a .NET build and a sample consumer project."},
-    {"what": "Compiling generated code for a netstandard2.0 consumer without the guard", "why": "Needs a .NET build. F1 rests on reference-assembly metadata instead."},
-    {"what": "Behaviour of serialization at runtime", "why": "Out of scope: the change only adds attributes. P1 shows no other line moved in 220 files."}
+    {
+      "what": "Running the test suite on the base and head commits",
+      "why": "No .NET SDK on the review host. Planned: run in CI and show that the new tests also pass on base."
+    },
+    {
+      "what": "A coverage tool (coverlet) honouring the attribute end to end",
+      "why": "Needs a .NET build and a sample consumer project."
+    },
+    {
+      "what": "Compiling generated code for a netstandard2.0 consumer without the guard",
+      "why": "Needs a .NET build. F1 rests on reference-assembly metadata instead."
+    },
+    {
+      "what": "Behaviour of serialization at runtime",
+      "why": "Out of scope: the change only adds attributes. P1 shows no other line moved in 220 files."
+    }
   ],
-
   "routing": {
     "risk": "medium",
     "why": "Generated code ships into every consumer's build; one policy file touched.",
     "areas": [
-      {"area": "Generated snapshots (*.g.cs)", "files": 222, "trust": "machine-verified", "human": "none, unless the shape check fails"},
-      {"area": "Generator templates (*.tt + twins)", "files": 13, "trust": "earned", "human": "skim one pair"},
-      {"area": "Tests", "files": 1, "trust": "probation", "human": "read the assertions"},
-      {"area": "Docs", "files": 1, "trust": "earned", "human": "read 2 lines"},
-      {"area": "Dependency / toolchain", "files": 1, "trust": "never delegated", "human": "decide"}
+      {
+        "area": "Generated snapshots (*.g.cs)",
+        "files": 222,
+        "trust": "machine-verified",
+        "human": "none, unless the shape check fails"
+      },
+      {
+        "area": "Generator templates (*.tt + twins)",
+        "files": 13,
+        "trust": "earned",
+        "human": "skim one pair"
+      },
+      {
+        "area": "Tests",
+        "files": 1,
+        "trust": "probation",
+        "human": "read the assertions"
+      },
+      {
+        "area": "Docs",
+        "files": 1,
+        "trust": "earned",
+        "human": "read 2 lines"
+      },
+      {
+        "area": "Dependency / toolchain",
+        "files": 1,
+        "trust": "never delegated",
+        "human": "decide"
+      }
     ]
-  }
+  },
+  "rules": [
+    {
+      "id": "S1",
+      "rule": "AI never approves",
+      "detail": "Only a named human can sign. The reviewer has no merge button.",
+      "state": "enforced",
+      "hit": "Sign-off requires a full name"
+    },
+    {
+      "id": "S2",
+      "rule": "No evidence, no claim",
+      "detail": "Every finding needs a check anyone can re-run.",
+      "state": "enforced",
+      "hit": "Each finding carries its check"
+    },
+    {
+      "id": "S3",
+      "rule": "Out-of-scope code stops the line",
+      "detail": "A change no requirement asks for goes to a human.",
+      "state": "triggered",
+      "hit": "R1: toolchain upgrade",
+      "ref": "R1"
+    },
+    {
+      "id": "S4",
+      "rule": "Policy files are never AI-decided",
+      "detail": "Dependencies, toolchain, security, public API.",
+      "state": "triggered",
+      "hit": "R1: Directory.Packages.props",
+      "ref": "R1"
+    },
+    {
+      "id": "S5",
+      "rule": "Agent's tests and docs are claims, not proof",
+      "detail": "Checked against outside sources before they count.",
+      "state": "triggered",
+      "hit": "F1: README and tests are wrong",
+      "ref": "F1"
+    },
+    {
+      "id": "S6",
+      "rule": "Say what was not checked",
+      "detail": "Gaps are listed on the receipt the owner signs.",
+      "state": "triggered",
+      "hit": "4 gaps listed"
+    },
+    {
+      "id": "S7",
+      "rule": "Signature is bound to the evidence",
+      "detail": "A new commit or changed evidence voids the sign-off.",
+      "state": "enforced",
+      "hit": "Hash-locked to commit"
+    }
+  ]
 }
