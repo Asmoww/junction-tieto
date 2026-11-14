@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Would You Sign It?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/case.css">
+<style>
+body{min-height:100dvh}
+.screen{display:none;min-height:100dvh}
+.screen.on{display:block}
+.center{display:flex;flex-direction:column;justify-content:center;min-height:100dvh;padding:40px 20px}
+.big{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:clamp(38px,9vw,66px);line-height:1.02;letter-spacing:-.02em;margin:0}
+.big em{font-style:normal;color:var(--red)}
+.sub{font-size:19px;color:var(--muted);margin:18px 0 0;max-width:30em}
+.btn{font:600 17px "IBM Plex Sans";background:var(--ink);color:var(--paper);border:0;padding:14px 26px;border-radius:10px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+.btn.link{background:none;color:var(--muted);font-weight:400;font-size:14px;text-decoration:underline;padding:10px 4px}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.namebox{display:flex;gap:10px;margin-top:30px;flex-wrap:wrap}
+.namebox input{flex:1;min-width:200px;font:inherit;font-size:18px;background:var(--card);color:var(--ink);border:1px solid var(--rule);border-radius:10px;padding:12px 14px}
+
+/* Round 1: the raw pull request */
+.bar1{position:sticky;top:0;z-index:5;background:var(--paper);border-bottom:1px solid var(--rule);padding:12px 0}
+.bar1 .wrap{display:flex;gap:14px;align-items:center;justify-content:space-between}
+.bar1 .t{font-weight:600;font-size:15px;line-height:1.3}
+.bar1 .m{font-size:13px;color:var(--muted)}
+.bar1 .m b{color:var(--green);font-weight:500}.bar1 .m i{font-style:normal;color:var(--red)}
+.clock{font:600 26px "IBM Plex Mono";min-width:72px;text-align:right}
+.clock.late{color:var(--red)}
+.agent{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:14px 16px;margin:16px 0;font-size:14.5px}
+.agent div{margin:3px 0}.agent span{color:var(--green);margin-right:8px}
+.agent .who{font:500 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-bottom:6px}
+.file{border:1px solid var(--rule);border-radius:8px;margin:0 0 10px;background:var(--card);overflow:hidden}
+.file .fh{font:500 12px "IBM Plex Mono";padding:8px 12px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;gap:10px;word-break:break-all}
+.file .fh small{white-space:nowrap}.file .fh b{color:var(--green);font-weight:500}.file .fh i{color:var(--red);font-style:normal}
+.file pre{margin:0;border:0;border-radius:0;font-size:11.5px;padding:4px 0;background:var(--card)}
+.file pre span{padding:0 12px}
+.file pre .h{color:var(--muted);background:var(--grey-bg)}
+.dock{position:sticky;bottom:0;z-index:5;background:var(--paper);border-top:1px solid var(--rule);padding:12px 0 calc(12px + env(safe-area-inset-bottom))}
+.dock .wrap{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.dock .btn{flex:1;min-width:130px}
+
+/* Reveal */
+.probcard{background:var(--card);border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:10px;padding:16px 18px;margin-top:14px}
+.probcard h3{font-size:20px;line-height:1.25}
+.probcard p{margin:6px 0 0;color:var(--muted);font-size:15px}
+.probcard pre{margin:10px 0 0;background:var(--paper)}
+
+/* Round 2 */
+.r2top{display:flex;justify-content:space-between;align-items:center;padding:28px 0 6px}
+.r2q{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:18px 20px;margin-top:14px}
+.r2q .row{display:flex;gap:10px;align-items:center;margin-bottom:8px}
+.r2q h3{font-size:20px;line-height:1.25}
+.r2q p{margin:6px 0 14px;color:var(--muted);font-size:15px}
+.r2q .ev{margin:0 0 12px}
+
+/* Results */
+.res{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:30px}
+.res>div{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:18px}
+.res .k{font:500 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.res .v{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:40px;line-height:1.05;margin-top:8px}
+.res .v.bad{color:var(--red)}.res .v.good{color:var(--green)}
+.res small{display:block;color:var(--muted);font-size:13px;margin-top:4px}
+.crowd{margin-top:34px;font-size:17px}
+.crowd b{font-family:Fraunces,Georgia,serif;font-size:22px}
+.close{font-family:Fraunces,Georgia,serif;font-size:clamp(26px,5vw,36px);line-height:1.15;margin-top:44px}
+.close em{font-style:normal;color:var(--red)}
+.links{margin-top:22px;display:flex;gap:18px;flex-wrap:wrap;font-size:15px}
+</style>
+</head>
+<body>
+
+<!-- 0. Intro -->
+<div class="screen on" id="s0"><div class="wrap center">
+  <div class="kicker">Friday, 21:00</div>
+  <p class="big">An AI agent just finished a pull request.<br><em>You</em> approve it.</p>
+  <p class="sub">You have 45 seconds. Your name goes on the approval.</p>
+  <div class="namebox">
+    <input id="name" placeholder="Your first name" autocomplete="given-name" maxlength="40">
+    <button class="btn" id="start">Open the pull request</button>
+  </div>
+</div></div>
+
+<!-- 1. Round 1: raw diff -->
+<div class="screen" id="s1">
+  <div class="bar1"><div class="wrap">
+    <div><div class="t">Add ExcludeFromCodeCoverage attribute to generated code</div>
+      <div class="m">238 files · <b>+1385</b> <i>−11</i> · author: AI agent</div></div>
+    <div class="clock" id="clock">0:45</div>
+  </div></div>
+  <div class="wrap">
+    <div class="agent">
+      <div class="who">Agent's summary</div>
+      <div><span>✓</span>All generated code is now excluded from coverage</div>
+      <div><span>✓</span>Tests added</div>
+      <div><span>✓</span>Documentation updated</div>
+    </div>
+    <div id="files"><p class="small">Loading diff…</p></div>
+  </div>
+  <div class="dock"><div class="wrap">
+    <button class="btn" data-r1="approve">Approve</button>
+    <button class="btn ghost" data-r1="reject">Send back</button>
+    <button class="btn link" data-r1="ai">Approve, the AI reviewer said it's fine</button>
+  </div></div>
+</div>
+
+<!-- 2. Reveal -->
+<div class="screen" id="s2"><div class="wrap" style="padding:56px 20px 60px">
+  <div class="kicker" id="r1kick"></div>
+  <p class="big" id="r1head"></p>
+  <p class="sub" id="r1sub"></p>
+  <div class="probcard"><h3>The feature silently skips many users.</h3>
+    <p>The agent believed the attribute doesn't exist on netstandard2.0 and .NET Framework. It does. Its own tests confirm the mistake.</p>
+    <pre><span class="a">+#if !NETSTANDARD2_0 && !NETFRAMEWORK</span></pre></div>
+  <div class="probcard"><h3>It raised the minimum compiler. Nobody asked.</h3>
+    <p>Teams on older Visual Studio may lose the code generator.</p>
+    <pre><span class="d">- MicrosoftCodeAnalysisVersion  4.3.0</span><span class="a">+ MicrosoftCodeAnalysisVersion  4.12.0</span></pre></div>
+  <div style="margin-top:34px"><button class="btn" id="toR2">Try again with an AI reviewer that shows its evidence</button></div>
+</div></div>
+
+<!-- 3. Round 2: case file -->
+<div class="screen" id="s3"><div class="wrap" style="padding-bottom:60px">
+  <div class="r2top"><div class="kicker" style="margin:0">Same pull request · with the case file</div><div class="clock" id="clock2">0:00</div></div>
+  <p class="big" style="font-size:clamp(30px,6vw,44px)">221 files proven by machine.<br><em>2 decisions for you.</em></p>
+  <div class="r2q">
+    <div class="row"><span class="pill p-contested">AI found</span><span class="mono muted">with proof</span></div>
+    <h3>The guard skips users who can use the feature</h3>
+    <p>netstandard2.0 and .NET Framework projects get nothing.</p>
+    <div class="ev"><b>Machine check</b> Microsoft's reference assemblies define the attribute on both.</div>
+    <div class="choices">
+      <label><input type="radio" name="F1" value="Fix before merge"><span>Fix before merge</span></label>
+      <label><input type="radio" name="F1" value="Accept as is"><span>Accept as is</span></label>
+    </div>
+  </div>
+  <div class="r2q">
+    <div class="row"><span class="pill p-refused">AI refused</span><span class="mono muted">your call</span></div>
+    <h3>Drop support for older Visual Studio?</h3>
+    <p>Not in the requirement. The same line is in all four agent pull requests.</p>
+    <div class="choices">
+      <label><input type="radio" name="R1" value="Revert it"><span>No, revert it</span></label>
+      <label><input type="radio" name="R1" value="Split into own PR"><span>Decide separately</span></label>
+      <label><input type="radio" name="R1" value="Accept the support drop"><span>Yes, drop them</span></label>
+    </div>
+  </div>
+  <p class="small" style="margin-top:18px">Not checked: the test suite was not run. You accept that by signing.</p>
+  <div style="margin-top:14px"><button class="btn" id="sign2" disabled>Sign</button></div>
+</div></div>
+
+<!-- 4. Results -->
+<div class="screen" id="s4"><div class="wrap" style="padding:56px 20px 60px">
+  <div class="kicker">Your result</div>
+  <p class="big" id="reshead" style="font-size:clamp(32px,7vw,52px)"></p>
+  <div class="res">
+    <div><div class="k">Without evidence</div><div class="v" id="t1"></div><small>to decide</small>
+      <div class="v bad" id="u1" style="margin-top:12px"></div><small>problems you didn't know about</small></div>
+    <div><div class="k">With the case file</div><div class="v" id="t2"></div><small>to decide</small>
+      <div class="v good" style="margin-top:12px">0</div><small>problems you didn't know about</small></div>
+  </div>
+  <div class="crowd" id="crowd"></div>
+  <p class="close">AI reviews.<br><em>You stay accountable.</em></p>
+  <div class="links"><a href="/">How it works</a><a href="/cases.html">The reviewer on 4 real agent changes</a><a href="#" id="again">Play again</a></div>
+</div></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const LIMIT = 45;
+const state = {name: "", r1: null, r1secs: 0, r2secs: 0};
+let t0, tick;
+
+function show(id){ document.querySelectorAll(".screen").forEach(s => s.classList.toggle("on", s.id === id)); scrollTo(0, 0); }
+const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+// Round 1 diff: the real 238-file change, as a reviewer would see it.
+fetch("/diff-2297.json").then(r => r.json()).then(files => {
+  $("#files").innerHTML = files.map(f => `<div class="file"><div class="fh"><span>${esc(f.path)}</span><small><b>+${f.add}</b> <i>−${f.del}</i></small></div><pre>${
+    f.lines.map(l => `<span class="${l.startsWith("@@") ? "h" : l[0] === "+" ? "a" : l[0] === "-" ? "d" : ""}">${esc(l)}</span>`).join("")}</pre></div>`).join("");
+});
+
+$("#start").onclick = () => {
+  state.name = $("#name").value.trim();
+  show("s1");
+  t0 = Date.now();
+  tick = setInterval(() => {
+    const left = LIMIT - (Date.now() - t0) / 1000;
+    $("#clock").textContent = left > 0 ? fmt(left) : "−" + fmt(-left);
+    $("#clock").classList.toggle("late", left < 10);
+  }, 250);
+};
+
+document.querySelectorAll("[data-r1]").forEach(b => b.onclick = () => {
+  clearInterval(tick);
+  state.r1 = b.dataset.r1;
+  state.r1secs = (Date.now() - t0) / 1000;
+  const who = state.name ? `${esc(state.name)}, y` : "Y";
+  const R = {
+    approve: ["You signed it", `${who}ou approved two problems.`, "Both now reach users, with your name on them. No test caught either."],
+    ai: ["Not accepted", "“The AI said it was fine.”", "That is an unowned merge. Your name is still on it, and it shipped two problems."],
+    reject: ["You sent it back", "Safe, but blind.", "You blocked it without knowing why. The agent can't fix what nobody named. Here is what was in it:"],
+  }[state.r1];
+  $("#r1kick").textContent = R[0];
+  $("#r1head").innerHTML = R[1];
+  $("#r1sub").textContent = R[2];
+  show("s2");
+});
+
+$("#toR2").onclick = () => {
+  show("s3");
+  t0 = Date.now();
+  tick = setInterval(() => $("#clock2").textContent = fmt((Date.now() - t0) / 1000), 250);
+};
+
+const pick = n => document.querySelector(`input[name="${n}"]:checked`)?.value;
+document.addEventListener("change", () => $("#sign2").disabled = !(pick("F1") && pick("R1")));
+
+$("#sign2").onclick = async () => {
+  clearInterval(tick);
+  state.r2secs = (Date.now() - t0) / 1000;
+  const unknown1 = 2;  // approved or rejected, the two problems were unknown when deciding
+  $("#reshead").innerHTML = state.r1 === "reject"
+    ? "You were careful. Now you also know why."
+    : "Same pull request. Now you know what you signed.";
+  $("#t1").textContent = Math.round(state.r1secs) + "s";
+  $("#t2").textContent = Math.round(state.r2secs) + "s";
+  $("#u1").textContent = unknown1;
+  show("s4");
+  try {
+    const res = await fetch("/api/game", {method: "POST", headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({name: state.name, r1: {choice: state.r1, secs: state.r1secs},
+        r2: {F1: pick("F1"), R1: pick("R1"), secs: state.r2secs}})});
+    crowd(await res.json());
+  } catch { crowd(await (await fetch("/api/game/stats")).json()); }
+};
+
+function crowd(s){
+  if (!s.players) return;
+  const pct = x => Math.round(100 * x / s.players);
+  $("#crowd").innerHTML = `Everyone who played today (<b>${s.players}</b>):<br>
+    <b>${pct(s.r1_approved)}%</b> approved it without evidence, after ${Math.round(s.r1_secs)}s on average.
+    With the case file, decisions took <b>${Math.round(s.r2_secs)}s</b>.`;
+}
+
+$("#again").onclick = e => { e.preventDefault(); location.reload(); };
+</script>
+</body>
+</html>
