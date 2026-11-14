@@ -4,3 +4,4 @@ __pycache__/
 evidence/pkgs/
 data/signoffs.jsonl
 data/game.jsonl
+demo/
