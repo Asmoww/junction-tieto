@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trust Measurements</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/case.css">
+<style>
+.m{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.m>div{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:20px}
+.m .k{font:500 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.m .v{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:46px;line-height:1.05;margin-top:8px}
+.m .v small{font-size:22px;color:var(--muted)}
+.m p{margin:8px 0 0;font-size:14.5px;color:var(--muted)}
+.m .wide{grid-column:1/-1}
+.barrow{display:flex;height:12px;border-radius:6px;overflow:hidden;margin-top:12px;gap:2px}
+.barrow span{display:block}
+.lg{display:flex;gap:14px;flex-wrap:wrap;font-size:12.5px;color:var(--muted);margin-top:6px}
+.lg i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:5px}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font:500 11px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.07em;color:var(--muted);padding:8px 10px;border-bottom:1px solid var(--rule)}
+td{padding:9px 10px;border-bottom:1px solid var(--rule)}
+.tbl{background:var(--card);border:1px solid var(--rule);border-radius:12px;overflow-x:auto}
+.ok{color:var(--green)}.no{color:var(--red)}
+.fm{display:grid;gap:10px}
+.fm div{background:var(--card);border:1px solid var(--rule);border-left:3px solid var(--red);border-radius:10px;padding:12px 16px}
+.fm b{display:block}.fm span{font-size:14px;color:var(--muted)}
+@media (max-width:640px){.m{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="wrap" id="app"><p style="padding:80px 0">Loading…</p></main>
+<footer class="wrap"><a href="/">Why this exists</a> · <a href="/concept">Concept</a> · <a href="/cases">Cases</a> · <a href="/log">Decision log</a></footer>
+<script>
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+(async () => {
+  const [M, G] = await Promise.all([fetch("/api/metrics").then(r => r.json()), fetch("/api/game/stats").then(r => r.json())]);
+  const sc = M.spotcheck, tot = sc.true + sc.partly + sc.false + sc.unverifiable;
+  const rt = M.spotcheck_routed, rtot = rt.true + rt.partly + rt.false + rt.unverifiable;
+  const pl = M.planted, ro = M.routing;
+  const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+  document.getElementById("app").innerHTML = `
+  <section class="first">
+    <div class="kicker">Measurement</div>
+    <h1>How we know whether to trust the reviewer.</h1>
+    <p class="lead">Measured on the four real agent changes, plus defects we planted ourselves. Nothing here is a model's opinion of itself.</p>
+  </section>
+
+  <section>
+    <h2>Is the AI right?</h2>
+    <div class="m">
+      <div class="wide"><div class="k">AI findings checked against the code</div>
+        <div class="v">${sc.true + sc.partly}<small> / ${tot} real</small></div>
+        <div class="barrow"><span style="flex:${sc.true};background:var(--green)"></span><span style="flex:${sc.partly};background:var(--muted);opacity:.5"></span><span style="flex:${sc.false};background:var(--red)"></span></div>
+        <div class="lg"><span><i style="background:var(--green)"></i>${sc.true} true</span><span><i style="background:var(--muted);opacity:.5"></i>${sc.partly} partly true</span><span><i style="background:var(--red)"></i>${sc.false} false</span></div>
+        <p>All ${tot} passed the quote check, so quoting real code is not enough. Of the ${rtot} findings routed to the owner, ${rt.false} ${rt.false === 1 ? "was" : "were"} false. Checked by a second, independent review pass with full repository access.</p></div>
+      <div><div class="k">Planted defects caught</div><div class="v">${pl.caught}<small> / ${pl.total}</small></div>
+        <p>Machine rules ${pl.machine[0]}/${pl.machine[1]}, AI ${pl.ai[0]}/${pl.ai[1]}. Missed: ${esc(pl.defects.filter(d => !d.caught).map(d => d.what.toLowerCase()).join(", "))}.</p></div>
+      <div><div class="k">Same finding on a re-run</div><div class="v">${M.reproduced === null ? "–" : pct(M.reproduced, 1) + "%"}</div>
+        <p>First-run findings that reappear in 2 repeat runs (same file and quoted line, so a lower bound). Decisions per change stay at 2–3; policy rules are deterministic.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Does it save human time?</h2>
+    <div class="m">
+      <div><div class="k">Files proven by machine</div><div class="v">${ro.proven}<small> / ${ro.files}</small></div>
+        <p>Across ${ro.changes} agent changes. Nobody reads them.</p></div>
+      <div><div class="k">Decisions routed to a person</div><div class="v">${(ro.decisions / ro.changes).toFixed(1)}<small> per change</small></div>
+        <p>${ro.decisions} in total. Every change still ends with a named signature.</p></div>
+      <div><div class="k">Reviewer time per change</div><div class="v">${Math.round(M.review_seconds)}<small> s</small></div>
+        <p>Deterministic checks plus one AI call.</p></div>
+      <div><div class="k">Live: people who played today</div>
+        ${G.players ? `<div class="v">${pct(G.r1_approved, G.players)}%<small> approved blind</small></div>
+        <p>${G.players} players. ${Math.round(G.r1_secs)}s on the raw diff, then ${Math.round(G.r2_secs)}s to decide with the case file.</p>`
+        : `<div class="v">–</div><p>No plays yet. <a href="/play">Play</a></p>`}</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Per change</h2>
+    <div class="tbl"><table>
+      <tr><th>Change</th><th>Decisions per run</th><th>Reproduced</th><th>Spot-check (true / partly / false)</th></tr>
+      ${Object.entries(M.cases).map(([n, c]) => `<tr><td><a href="/case?id=${n}">REQ-${n}</a></td><td class="mono">${c.decisions_per_run.join(" · ")}</td>
+        <td>${c.reproduced === null ? "–" : pct(c.reproduced, 1) + "%"}</td><td class="mono">${c.spotcheck.true} / ${c.spotcheck.partly} / ${c.spotcheck.false}</td></tr>`).join("")}
+    </table></div>
+  </section>
+
+  <section>
+    <h2>Failure modes we saw</h2>
+    <div class="fm">
+      <div><b>False findings with real quotes</b><span>${sc.false} of ${tot} findings were wrong about the code they quoted. Quote-or-drop stops invented code, not wrong reasoning.</span></div>
+      <div><b>A planted empty test went unnoticed</b><span>The AI reviewed the existing tests and missed the new one that asserts nothing.</span></div>
+      <div><b>Results vary between runs</b><span>The number of decisions per change moves between runs. Policy rules never do.</span></div>
+      <div><b>The agent worked on a stale base</b><span>2283 and 2234 branch from an old commit, so a crash site that is live on master looks fixed in the diff.</span></div>
+      <div><b>Our own quick check was wrong</b><span>We first marked a 2283 finding false; the full spot-check showed it was true. Humans need evidence too.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>In production we would track</h2>
+    <div class="list">
+      <div><span class="pill p-proven">outcome</span><div>Reverts and incidents per change<small>Must not rise as review time falls.</small></div></div>
+      <div><span class="pill p-proven">outcome</span><div>Escapes per area<small>One escape withdraws an area's machine-verified trust.</small></div></div>
+      <div><span class="pill p-supported">reviewer</span><div>Findings accepted vs overridden by owners<small>From the sign-off log, per rule and per area.</small></div></div>
+      <div><span class="pill p-supported">reviewer</span><div>Spot-check precision and planted-defect recall<small>Run weekly on a sample.</small></div></div>
+      <div><span class="pill p-weak-evidence">flow</span><div>Time to merge and share routed to humans<small>The cost side of the trade-off.</small></div></div>
+    </div>
+  </section>`;
+})();
+</script>
+</body>
+</html>

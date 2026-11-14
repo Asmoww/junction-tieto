@@ -69,11 +69,21 @@ class Handler(SimpleHTTPRequestHandler):
             cases = [json.loads(p.read_text()) for p in sorted((DATA / "cases").glob("*.json"))]
             return self.send_json([{"id": c["id"], "title": c["requirement"]["title"], "branch": c["branch"],
                                     "stats": c["stats"], "story": c["story"]} for c in cases])
+        if self.path == "/api/metrics":
+            return self.send_json(json.loads((DATA / "metrics.json").read_text()))
+        if self.path == "/api/log":
+            body = (ROOT / "DECISIONS.md").read_bytes()
+            self.send_response(200)
+            self.send_header("Content-Type", "text/plain; charset=utf-8")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+            return
         if self.path == "/api/game/stats":
             return self.send_json(game_stats())
         if self.path == "/api/signoffs":
             return self.send_json(read_log())
-        if self.path.split("?")[0] in ("/play", "/table", "/cases", "/case"):
+        if self.path.split("?")[0] in ("/play", "/table", "/cases", "/case", "/concept", "/metrics", "/log"):
             self.path = self.path.replace(self.path.split("?")[0], self.path.split("?")[0] + ".html", 1)
         return super().do_GET()
 

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Log</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/case.css">
+<style>
+#log h1{margin:56px 0 10px}
+#log h2{margin:40px 0 12px;font-size:24px}
+#log ul{padding-left:20px}
+#log li{margin:8px 0;font-size:15.5px}
+#log code{font-family:"IBM Plex Mono";font-size:13px;background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:1px 4px}
+</style>
+</head>
+<body>
+<main class="wrap" id="log"></main>
+<footer class="wrap"><a href="/">Why this exists</a> · <a href="/concept">Concept</a> · <a href="/metrics">Measurements</a></footer>
+<script>
+const esc = s => s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inline = s => esc(s).replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`(.+?)`/g, "<code>$1</code>");
+fetch("/api/log").then(r => r.text()).then(md => {
+  let html = "", inList = false;
+  for (const line of md.split("\n")) {
+    if (line.startsWith("- ")) { if (!inList) { html += "<ul>"; inList = true; } html += `<li>${inline(line.slice(2))}</li>`; continue; }
+    if (inList) { html += "</ul>"; inList = false; }
+    if (line.startsWith("## ")) html += `<h2>${inline(line.slice(3))}</h2>`;
+    else if (line.startsWith("# ")) html += `<h1>${inline(line.slice(2))}</h1>`;
+    else if (line.trim()) html += `<p>${inline(line)}</p>`;
+  }
+  document.getElementById("log").innerHTML = html + (inList ? "</ul>" : "");
+});
+</script>
+</body>
+</html>

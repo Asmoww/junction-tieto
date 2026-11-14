@@ -155,9 +155,9 @@ body{min-height:100dvh}
   <p class="big" id="reshead" style="font-size:clamp(32px,7vw,52px)"></p>
   <div class="res">
     <div><div class="k">Without evidence</div><div class="v" id="t1"></div><small>to decide</small>
-      <div class="v bad" id="u1" style="margin-top:12px"></div><small>problems you didn't know about</small></div>
+      <div class="v bad" id="u1" style="margin-top:12px"></div><small>of 2 problems pointed out to you</small></div>
     <div><div class="k">With the case file</div><div class="v" id="t2"></div><small>to decide</small>
-      <div class="v good" style="margin-top:12px">0</div><small>problems you didn't know about</small></div>
+      <div class="v good" style="margin-top:12px">2</div><small>of 2 problems pointed out, with evidence</small></div>
   </div>
   <div class="crowd" id="crowd"></div>
   <p class="close">AI reviews.<br><em>You stay accountable.</em></p>
@@ -219,13 +219,13 @@ document.addEventListener("change", () => $("#sign2").disabled = !(pick("F1") &&
 $("#sign2").onclick = async () => {
   clearInterval(tick);
   state.r2secs = (Date.now() - t0) / 1000;
-  const unknown1 = 2;  // approved or rejected, the two problems were unknown when deciding
+  const seen1 = 0;  // the raw diff contains both problems but points out neither
   $("#reshead").innerHTML = state.r1 === "reject"
     ? "You were careful. Now you also know why."
     : "Same pull request. Now you know what you signed.";
   $("#t1").textContent = Math.round(state.r1secs) + "s";
   $("#t2").textContent = Math.round(state.r2secs) + "s";
-  $("#u1").textContent = unknown1;
+  $("#u1").textContent = seen1;
   show("s4");
   try {
     const res = await fetch("/api/game", {method: "POST", headers: {"Content-Type": "application/json"},

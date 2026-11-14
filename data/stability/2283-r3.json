@@ -1,0 +1,144 @@
+{
+  "id": "2283",
+  "requirement": {
+    "id": "REQ-2283",
+    "title": "Generator and analyzer crash with IndexOutOfRangeException on a closed generic struct from a referenced assembly",
+    "source": "https://github.com/MessagePack-CSharp/MessagePack-CSharp/issues/2283",
+    "text": "#### Bug description\n\nBoth `MessagePackGenerator` (CS8785) and `MsgPack00xMessagePackAnalyzer` (AD0001) throw `IndexOutOfRangeException` when a `[MessagePackObject]` type has a member whose type is a **closed generic value type defined in a referenced assembly**.\n\nBecause the generator then \"will not contribute to the output\", the compiling assembly silently ends up with **no generated resolver at all**. It is only a warning, so a normal build looks fine, but trimmed and NativeAOT apps fail at runtime. In our case three assemblies of a large app had been shipping without a resolver across two releases before we noticed.\n\n#### Repro steps\n\nTwo projects. `lib`:\n\n```csharp\nusing MessagePack;\nnamespace Lib;\n\n[MessagePackObject]\npublic partial record struct Item<T>([property: Key(0)] string Key);\n```\n\n`app`, with a `ProjectReference` to `lib`:\n\n```csharp\nusing MessagePack; using Lib;\nnamespace App;\n\n[MessagePackObject]\npublic sealed partial record Cmd([property: Key(0)] string Scope)\n{\n    [Key(1)] public Item<int> Member { get; init; }\n}\n```\n\nThen `dotnet build` on `app`. Both projects are in the attached `mp-repro.zip`.\n\n#### Expected behavior\n\nA clean build, with a generated resolver in `app`.\n#### Actual behavior\n\n```\nCSC : warning CS8785: Generator 'MessagePackGenerator' failed to generate source. It will not\ncontribute to the output and compilation errors may occur as a result. Exception was of type\n'IndexOutOfRangeException' with message 'Index was outside the bounds of the array.'.\nCSC : warning AD0001: Analyzer 'MessagePack.SourceGenerator.Analyzers.MsgPack00xMessagePackAnalyzer'\nthrew an exception of type 'System.IndexOutOfRangeException' with message 'Index was outside the\nbounds of the array.'.\n```\n\n`app.dll` contains no `GeneratedMessagePackResolver`.\n\n- Version used: MessagePack 3.1.8\n- Runtime: .NET 10 (SDK 10.0.204), Windows 11\n\n#### Additional context\n\n**What triggers it.** `Item` is declared in `lib`, `Cmd` in `app`:\n\n| `Item` declared as | result |\n|---|---|\n| `record struct Item<T>` | **crash** |\n| `struct Item<T>` | **crash** |\n| `struct Item` | ok |\n| `record struct Item` | ok |\n| `class Item<T>` | ok |\n| `record class Item<T>` | ok |\n\nSo it needs all three of: **generic**, **value type**, **from a referenced assembly**. Moving the identical `Item<T>` declaration into `app` itself makes the crash disappear, which is what makes this specific to metadata symbols.\n**Stack trace.**\n\n```\nSystem.IndexOutOfRangeException: Index was outside the bounds of the array.\n   at TypeCollector.GetObjectInfo(INamedTypeSymbol formattedType, ISymbol callerSymbol)\n   at TypeCollector.CollectGeneric(INamedTypeSymbol type, ISymbol callerSymbol) in TypeCollector.cs:line 661\n   at TypeCollector.CollectCore(ITypeSymbol typeSymbol, ISymbol callerSymbol) in TypeCollector.cs:line 371\n   at TypeCollector.GetObjectInfo(INamedTypeSymbol formattedType, ISymbol callerSymbol) in TypeCollector.cs:line 1062\n   at TypeCollector.CollectCore(ITypeSymbol typeSymbol, ISymbol callerSymbol) in TypeCollector.cs:line 386\n   at TypeCollector.Collect() in TypeCollector.cs:line 300\n   at MsgPack00xMessagePackAnalyzer.AnalyzeSymbol(SymbolAnalysisContext, ReferenceSymbols, AnalyzerOptions) in MsgPack00xMessagePackAnalyzer.cs:line 431\n```\n\n`CollectGeneric` line 661 is the closed-generic branch that calls `GetObjectInfo` directly:\n\n```csharp\nelse\n{\n    // NOTE: ... closed generic types such as `Foo<string>` are not registered as a formatter.\n    this.GetObjectInfo(type, callerSymbol);\n```\n\nso `GetObjectInfo` runs against a type that has no syntax. Several diagnostic paths inside it index `DeclaringSyntaxReferences[0]` directly (lines 735, 1009, 1101) instead of using `FirstOrDefault()` the way the neighbouring `GetIdentifierLocation` / `GetLocation` / `GetParameterListLocation` helpers already do, and that collection is empty for a metadata symbol. I did not narrow down which of the three fires.\n\n**Getting the stack trace.** Console output truncates the exceptio"
+  },
+  "branch": "ju26-issue-2283",
+  "base_commit": "524fd55e14ff38875c5f24f4dd3b4ea744f4d883",
+  "head_commit": "9df83c38409c8bfad0517aebffe48211eda4a5b4",
+  "story": "The fix stops the generator and analyzer crashing on a closed generic struct from a referenced assembly. It swaps two DeclaringSyntaxReferences[0] lookups for null-safe ones and drops every diagnostic whose location is outside the current compilation. It also adds docs and metadata-reference tests.",
+  "stats": {
+    "files": 5,
+    "added": 227,
+    "removed": 5,
+    "files_proven": 0,
+    "decisions": 3,
+    "findings_kept": 5,
+    "findings_dropped": 0
+  },
+  "proof": null,
+  "decisions": [
+    {
+      "id": "R1",
+      "status": "refused",
+      "severity": "high",
+      "title": "Dependency change in Directory.Packages.props",
+      "oneliner": "Dependency and toolchain versions decide which users can build and run the package.",
+      "file": "Directory.Packages.props",
+      "quote": [
+        "-     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.3.0</MicrosoftCodeAnalysisVersion>",
+        "-     <PackageVersion Include=\"PolySharp\" Version=\"1.14.1\" />",
+        "+     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.12.0</MicrosoftCodeAnalysisVersion>",
+        "+     <PackageVersion Include=\"PolySharp\" Version=\"1.15.0\" />"
+      ],
+      "question": "Accept this dependency or toolchain change?",
+      "routed_by": "policy rule 'dependency': the reviewer may not decide this",
+      "seen_in": []
+    },
+    {
+      "id": "F1",
+      "severity": "medium",
+      "title": "Wrapper silently drops every location-less diagnostic",
+      "oneliner": "Every analyzer diagnostic now goes through a filter. Any diagnostic with Location.None or a null location is dropped, including ones about source types, not just metadata types.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "this.reportDiagnostic = reportAnalyzerDiagnostic is null ? null : diagnostic => ReportIfLocatedInCompilation(reportAnalyzerDiagnostic, diagnostic);",
+        "if (diagnostic.Location.IsInSource && this.compilation.ContainsSyntaxTree(diagnostic.Location.SourceTree))"
+      ],
+      "kind": "defect",
+      "requirement_part": "Expected behavior: A clean build, with a generated resolver in `app`.",
+      "would_be_wrong_if": "No existing TypeCollector diagnostic is created with a null or Location.None location for a source-declared symbol. I could not check this from the diff.",
+      "question": "Is it acceptable to suppress every location-less diagnostic, instead of only those for metadata symbols?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    },
+    {
+      "id": "F3",
+      "severity": "medium",
+      "title": "Only two of the three reported crash sites changed",
+      "oneliner": "The issue names three `[0]` indexing sites (lines 735, 1009, 1101). The diff touches two, and the 735 site may still index directly.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "this.reportDiagnostic?.Invoke(Diagnostic.Create(MsgPack00xMessagePackAnalyzer.BothStringAndIntKeyAreNull, GetPropertyIdentifierLocation(item), formattedType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat), item.Name));"
+      ],
+      "kind": "defect",
+      "requirement_part": "Several diagnostic paths inside it index `DeclaringSyntaxReferences[0]` directly (lines 735, 1009, 1101)",
+      "would_be_wrong_if": "The issue's line 735 maps to one of the two edited sites in this repo version, or that line is already null-safe.",
+      "question": "Has the third `DeclaringSyntaxReferences[0]` site near line 735 been checked or fixed?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    }
+  ],
+  "handled": [
+    {
+      "id": "F2",
+      "severity": "medium",
+      "title": "Problems in NuGet types now go silently unreported",
+      "oneliner": "An unkeyed member in a referenced type is dropped without a warning. A NuGet type built without this analyzer may then serialize incompletely and nobody is told.",
+      "file": "README.md",
+      "quote": [
+        "Diagnostics about the members of such a type are reported by the assembly that defines it rather than by the consuming project, so any problem must be fixed there."
+      ],
+      "kind": "note",
+      "requirement_part": "",
+      "would_be_wrong_if": "Every defining assembly is guaranteed to have run the MessagePack analyzer, or the generator refuses to produce a broken formatter for such a type.",
+      "question": "Should the consuming project get at least a location-less warning when it uses a referenced type that has an unkeyed or problematic member?",
+      "evidence": [],
+      "status": "supported",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "title": "Tests check the resolver exists, not what it contains",
+      "oneliner": "Generated-source checks are skipped and only the resolver's file name is asserted. Nothing checks that Item<int> gets a working formatter at runtime.",
+      "file": "tests/MessagePack.SourceGenerator.Tests/GenericsFormatterTests.cs",
+      "quote": [
+        "TestBehaviors = TestBehaviors.SkipGeneratedSourcesCheck,",
+        "Assert.Contains(expectedResolverHintName, hintNames);"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "trimmed and NativeAOT apps fail at runtime",
+      "would_be_wrong_if": "Another test already covers formatter resolution for closed generics coming from metadata.",
+      "question": "Do you want a test that actually serializes Cmd round-trip with Item<int> from a referenced assembly?",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F5",
+      "severity": "low",
+      "title": "Test's referenced assembly is built without the generator",
+      "oneliner": "The defining assembly is compiled without MessagePackGenerator, so it has no resolver for Item<T>. In the real-world repro, lib has one.",
+      "file": "tests/MessagePack.SourceGenerator.Tests/GenericsFormatterTests.cs",
+      "quote": [
+        "Compilation compilation = CreateCompilation(assemblyName, source, languageVersion, frameworkReferences.Concat(ReferencesHelper.GetReferences(ReferencesSet.MessagePack)), OutputKind.DynamicallyLinkedLibrary);"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "",
+      "would_be_wrong_if": "Whether lib has its own generated formatter makes no difference to the app-side generator.",
+      "question": "",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    }
+  ],
+  "dropped": [],
+  "not_checked": [
+    "The test suite was not run (no .NET SDK on the review host).",
+    "Whether the issue's line 735 `[0]` indexing still exists in this repo version and is reachable for metadata symbols",
+    "Whether any existing TypeCollector diagnostics are intentionally created with Location.None for source symbols",
+    "Whether the formatter generated for Item<int> in app is correct at runtime under trimming/NativeAOT"
+  ],
+  "reviewer": {
+    "duration_s": 32.1,
+    "cost_usd": 0.0820882,
+    "model": "default",
+    "prompt_chars": 19144
+  }
+}

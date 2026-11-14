@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Concept Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/case.css">
+<style>
+.flow{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:6px}
+.flow div{background:var(--card);border:1px solid var(--rule);border-radius:10px;padding:12px}
+.flow b{display:block;font-family:Fraunces,Georgia,serif;font-size:18px}
+.flow small{display:block;color:var(--muted);font-size:12.5px;margin-top:4px;line-height:1.35}
+.flow .ai{border-color:var(--ink)}
+.flow .you{border-color:var(--red)}.flow .you b{color:var(--red)}
+.tag{font:500 10px "IBM Plex Mono";text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.five{display:grid;gap:0;background:var(--card);border:1px solid var(--rule);border-radius:12px}
+.five>div{display:grid;grid-template-columns:140px 1fr;gap:16px;padding:14px 18px;border-bottom:1px solid var(--rule)}
+.five>div:last-child{border-bottom:0}
+.five .w{font-family:Fraunces,Georgia,serif;font-weight:700;font-size:18px}
+.five p{margin:0;font-size:15px}
+.five small{display:block;color:var(--muted);font-size:13px;margin-top:3px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:18px 20px}
+.box h3{font-size:19px;margin-bottom:8px}
+.box ul{margin:0;padding-left:18px;font-size:14.5px}.box li{margin:6px 0}
+.box li small{display:block;color:var(--muted)}
+.rec{font-family:Fraunces,Georgia,serif;font-size:clamp(24px,3.6vw,32px);line-height:1.2;margin-top:20px}
+.rec em{font-style:normal;color:var(--red)}
+@media (max-width:760px){.flow{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}.five>div{grid-template-columns:1fr;gap:4px}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<section class="first">
+  <div class="kicker">Concept card · Earned Trust in AI Code</div>
+  <h1>Evidence-first review with a named owner.</h1>
+  <p class="rec">The AI does the reading and shows its proof.<br><em>A named person makes every decision that matters, and signs for it.</em></p>
+</section>
+
+<section>
+  <h2>The review factory</h2>
+  <div class="flow">
+    <div><span class="tag">machine</span><b>1 Prove</b><small>Deterministic checks clear what can be proven, e.g. generated files.</small></div>
+    <div><span class="tag">machine</span><b>2 Gate</b><small>Dependencies, public API, secrets, build: always a human call.</small></div>
+    <div class="ai"><span class="tag">AI</span><b>3 Review</b><small>One reviewer reads what is left, against the requirement.</small></div>
+    <div><span class="tag">machine</span><b>4 Verify</b><small>Quote-or-drop: claims must quote real diff lines.</small></div>
+    <div><span class="tag">machine</span><b>5 Route</b><small>Named rules, no scores, decide what reaches the owner.</small></div>
+    <div class="you"><span class="tag">human</span><b>6 Sign</b><small>Owner answers, accepts the gaps, signs this exact commit.</small></div>
+  </div>
+  <p class="small" style="margin-top:14px">Afterwards: owners spot-check findings, escapes are tracked per area, and trust is earned or withdrawn per area.</p>
+</section>
+
+<section>
+  <h2>Principles</h2>
+  <div class="five">
+    <div><div class="w">Risk</div><p>Human attention follows named rules, not a score.<small>Policy areas are never delegated. Everything else reaches the owner only if it changes whether the requirement is met.</small></p></div>
+    <div><div class="w">Hallucination</div><p>No proof, no claim.<small>Findings must quote real code or they are deleted. Facts outside the diff need a machine probe. Spot-checks measure what slips through.</small></p></div>
+    <div><div class="w">Transparency</div><p>Every item says why it reached you.<small>What was not checked is listed on the receipt the owner signs.</small></p></div>
+    <div><div class="w">Confidence</div><p>We show the kind of evidence, never a confidence number.<small>Machine-proven › verified quote › AI claim. A percentage nobody can check is not shown.</small></p></div>
+    <div><div class="w">Quality</div><p>Judged against the requirement, not the agent's story.<small>The agent's own tests and docs are claims to check, not proof.</small></p></div>
+  </div>
+</section>
+
+<section>
+  <h2>Trade-offs and limits</h2>
+  <div class="two">
+    <div class="box"><h3>Trade-offs we chose</h3><ul>
+      <li>Machine-proven files skip AI review.<small>Fast and exact, but only as good as the template they repeat, which is reviewed instead.</small></li>
+      <li>Policy changes always go to a human.<small>Every sample agent change hit this rule. More human load, but no silent support drops.</small></li>
+      <li>One AI call per change.<small>30–45 s and cheap, but results vary between runs. We measure that.</small></li>
+      <li>Rules instead of scores.<small>Explainable and auditable; less nuanced than a learned risk model.</small></li>
+    </ul></div>
+    <div class="box"><h3>Limits we know</h3><ul>
+      <li>Quote-or-drop stops invented code, not wrong conclusions.<small>False findings with real quotes still pass. Spot-checks catch them.</small></li>
+      <li>The reviewer can share the coding agent's blind spots.<small>Deterministic gates do not depend on the AI at all.</small></li>
+      <li>Tests were not run in this reference.<small>No .NET SDK on the review host; listed as not checked on every receipt.</small></li>
+      <li>Requirements come from the upstream issues.<small>Not a formal requirements set with acceptance IDs.</small></li>
+    </ul></div>
+  </div>
+</section>
+
+<section>
+  <h2>Technology considerations</h2>
+  <div class="five">
+    <div><div class="w">Security</div><p>The diff is untrusted input to the reviewer.<small>Agent code could carry instructions aimed at the AI. So the reviewer has no tools and no approval power, its output is schema-bound and quote-verified, secrets are redacted before the model sees them, and the gates run without AI.</small></p></div>
+    <div><div class="w">Backend</div><p>Git diff in, case file out.<small>Python, deterministic checks, one headless model call with a JSON schema. Runs as a CI check in 30–45 s per change.</small></p></div>
+    <div><div class="w">Frontend</div><p>A case file instead of a diff.<small>Decisions first, evidence one tap away, sign-off with full name. Works on a phone.</small></p></div>
+    <div><div class="w">Accountability</div><p>Signatures bind to commit and evidence hash.<small>A new push voids the sign-off. The log is append-only.</small></p></div>
+  </div>
+</section>
+
+<section>
+  <h2>How it scales</h2>
+  <div class="five">
+    <div><div class="w">Per change</div><p>Cost and time stay flat; human time drops with the share proven by machine.</p></div>
+    <div><div class="w">Per repo</div><p>Policy globs, generated-file patterns and public-API paths are configuration.</p></div>
+    <div><div class="w">Per area</div><p>An area earns "machine-verified" after clean spot-checks, and loses it after one escape.</p></div>
+    <div><div class="w">Outcome</div><p>Success means review time falls while reverts and incidents do not rise. <a href="/metrics">See the measurements →</a></p></div>
+  </div>
+</section>
+</main>
+<footer class="wrap"><a href="/">Why this exists</a> · <a href="/play">Play</a> · <a href="/cases">Cases</a> · <a href="/metrics">Measurements</a> · <a href="/log">Decision log</a></footer>
+</body>
+</html>

@@ -1,0 +1,162 @@
+{
+  "id": "2234",
+  "requirement": {
+    "id": "REQ-2234",
+    "title": "The analyzer does not work if SuppressSourceGeneration = true",
+    "source": "https://github.com/MessagePack-CSharp/MessagePack-CSharp/issues/2234",
+    "text": "#### Bug description\n\nThe analyzer does not work if SuppressSourceGeneration = true. This has happened since version 3.1.1. It still worked in 3.1.0.\n\n"
+  },
+  "branch": "planted-2234",
+  "base_commit": "524fd55e14ff38875c5f24f4dd3b4ea744f4d883",
+  "head_commit": "e17c47b0143bc2034093d6721a9bb0cf0d9bb6cd",
+  "story": "Stops the type collector from crashing on duplicate or mixed keys, which is presumably why the analyzer died for suppressed types. Also adds README text and runtime round-trip tests.",
+  "stats": {
+    "files": 5,
+    "added": 283,
+    "removed": 6,
+    "files_proven": 0,
+    "decisions": 5,
+    "findings_kept": 5,
+    "findings_dropped": 0
+  },
+  "proof": null,
+  "decisions": [
+    {
+      "id": "R1",
+      "status": "refused",
+      "severity": "high",
+      "title": "Dependency change in Directory.Packages.props",
+      "oneliner": "Dependency and toolchain versions decide which users can build and run the package.",
+      "file": "Directory.Packages.props",
+      "quote": [
+        "-     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.3.0</MicrosoftCodeAnalysisVersion>",
+        "-     <PackageVersion Include=\"PolySharp\" Version=\"1.14.1\" />",
+        "+     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.12.0</MicrosoftCodeAnalysisVersion>",
+        "+     <PackageVersion Include=\"PolySharp\" Version=\"1.15.0\" />"
+      ],
+      "question": "Accept this dependency or toolchain change?",
+      "routed_by": "policy rule 'dependency': the reviewer may not decide this",
+      "seen_in": []
+    },
+    {
+      "id": "R2",
+      "status": "refused",
+      "severity": "high",
+      "title": "Credential change in SuppressSourceGenerationAnalyzerTests.cs",
+      "oneliner": "A credential in source is exposed to everyone who can read the repository, and stays in its history.",
+      "file": "tests/MessagePack.SourceGenerator.Tests/SuppressSourceGenerationAnalyzerTests.cs",
+      "quote": [
+        "    private const string FeedPassword = \"[REDACTED]\";"
+      ],
+      "question": "Remove the credential and rotate it?",
+      "routed_by": "policy rule 'secret': the reviewer may not decide this",
+      "seen_in": []
+    },
+    {
+      "id": "F1",
+      "severity": "high",
+      "title": "Inverted guard drops string-keyed fields",
+      "oneliner": "Second loop adds only when the key already exists: every string-keyed member is dropped, and a duplicate key still throws.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "                        if (stringMembers.ContainsKey(member.StringKey))",
+        "                        {",
+        "                            stringMembers.Add(member.StringKey, (member, item.Type));"
+      ],
+      "kind": "defect",
+      "requirement_part": "The analyzer does not work",
+      "would_be_wrong_if": "This second loop is unreachable for string-keyed members. That is unlikely, since it mirrors the first loop.",
+      "question": "Should this be `!stringMembers.ContainsKey`, as in the other three places?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "high severity defect"
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "title": "Duplicate keys now silently dropped",
+      "oneliner": "The first member with a key wins and later ones are ignored. Nothing shows that the duplicate-key diagnostic (MsgPack005) still fires before this point.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "                        if (!intMembers.ContainsKey(member.IntKey))",
+        "                        {",
+        "                            intMembers.Add(member.IntKey, (member, item.Type));"
+      ],
+      "kind": "defect",
+      "requirement_part": "",
+      "would_be_wrong_if": "Code outside the diff already reports duplicate keys before this point.",
+      "question": "Is a duplicate-key diagnostic still reported somewhere for both normal and suppressed types?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    },
+    {
+      "id": "F5",
+      "severity": "medium",
+      "title": "README claims behaviour the diff doesn't show",
+      "oneliner": "Lists five diagnostics that are enforced and three that are skipped for suppressed types. Nothing in the diff implements or verifies that split.",
+      "file": "README.md",
+      "quote": [
+        "The analyzer still validates these types, because they are serialized at run time and must still have a valid contract:",
+        "The analyzer does not report the partial-class requirement ([MsgPack011](doc/analyzers/MsgPack011.md)) or the AOT-only checks ([MsgPack016](doc/analyzers/MsgPack016.md) and [MsgPack017](doc/analyzers/MsgPack017.md)) for these types, because they only apply when a formatter is generated."
+      ],
+      "kind": "false-claim",
+      "requirement_part": "",
+      "would_be_wrong_if": "Code outside the diff already filters diagnostics this way for suppressed types.",
+      "question": "Do you want this README section in a bug fix, given the behaviour it describes isn't verified?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity false-claim"
+    }
+  ],
+  "handled": [
+    {
+      "id": "F3",
+      "severity": "low",
+      "title": "New `continue` skips the rest of the member's handling",
+      "oneliner": "Members with mixed key kinds now skip formatter-attribute handling and later checks, which may hide other diagnostics or change generated output.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "                            continue; // The key kind does not match the other members; the diagnostic is reported, so skip this member."
+      ],
+      "kind": "defect",
+      "requirement_part": "",
+      "would_be_wrong_if": "Nothing after this point in the loop matters once MsgPack005 is reported.",
+      "question": "",
+      "evidence": [],
+      "status": "supported",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F4",
+      "severity": "medium",
+      "title": "Tests don't cover the analyzer at all",
+      "oneliner": "The new tests only check runtime round-trip and that no formatter is generated. That worked before the change, so they don't show the bug is fixed.",
+      "file": "tests/MessagePack.SourceGenerator.ExecutionTests/SuppressedSourceGenerationTests.cs",
+      "quote": [
+        "        Assert.Null(GeneratedMessagePackResolver.Instance.GetFormatter<SuppressedSourceGenerationType>());",
+        "        byte[] bytes = MessagePackSerializer.Serialize(value, MessagePackSerializerOptions.Standard);"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "",
+      "would_be_wrong_if": "The policy-gated analyzer test file covers these cases, including string keys on fields.",
+      "question": "",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    }
+  ],
+  "dropped": [],
+  "not_checked": [
+    "The test suite was not run (no .NET SDK on the review host).",
+    "Whether the 3.1.1 regression was really a Dictionary.Add exception, or the analyzer skipping suppressed types altogether.",
+    "Where the code decides whether SuppressSourceGeneration types are analyzed, and whether MsgPack011/016/017 are skipped for them.",
+    "Whether the policy-gated analyzer tests exercise string-keyed fields and duplicate keys."
+  ],
+  "reviewer": {
+    "duration_s": 23.6,
+    "cost_usd": 0.717284,
+    "model": "default",
+    "prompt_chars": 7798
+  }
+}

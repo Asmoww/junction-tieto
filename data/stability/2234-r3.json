@@ -1,0 +1,132 @@
+{
+  "id": "2234",
+  "requirement": {
+    "id": "REQ-2234",
+    "title": "The analyzer does not work if SuppressSourceGeneration = true",
+    "source": "https://github.com/MessagePack-CSharp/MessagePack-CSharp/issues/2234",
+    "text": "#### Bug description\n\nThe analyzer does not work if SuppressSourceGeneration = true. This has happened since version 3.1.1. It still worked in 3.1.0.\n\n"
+  },
+  "branch": "ju26-issue-2234",
+  "base_commit": "524fd55e14ff38875c5f24f4dd3b4ea744f4d883",
+  "head_commit": "9007cee1163c4a274fd60c3cc20c21ae63622786",
+  "story": "The change stops the type collector from crashing when two members share a key or mix key kinds. It adds analyzer and run-time tests for types marked SuppressSourceGeneration, plus a README section.",
+  "stats": {
+    "files": 5,
+    "added": 264,
+    "removed": 6,
+    "files_proven": 0,
+    "decisions": 3,
+    "findings_kept": 4,
+    "findings_dropped": 1
+  },
+  "proof": null,
+  "decisions": [
+    {
+      "id": "R1",
+      "status": "refused",
+      "severity": "high",
+      "title": "Dependency change in Directory.Packages.props",
+      "oneliner": "Dependency and toolchain versions decide which users can build and run the package.",
+      "file": "Directory.Packages.props",
+      "quote": [
+        "-     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.3.0</MicrosoftCodeAnalysisVersion>",
+        "-     <PackageVersion Include=\"PolySharp\" Version=\"1.14.1\" />",
+        "+     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.12.0</MicrosoftCodeAnalysisVersion>",
+        "+     <PackageVersion Include=\"PolySharp\" Version=\"1.15.0\" />"
+      ],
+      "question": "Accept this dependency or toolchain change?",
+      "routed_by": "policy rule 'dependency': the reviewer may not decide this",
+      "seen_in": []
+    },
+    {
+      "id": "F1",
+      "severity": "high",
+      "title": "Fix never touches SuppressSourceGeneration handling",
+      "oneliner": "Only duplicate-key crash guards changed; nothing shows why suppressed types stopped being analyzed in 3.1.1.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "if (!intMembers.ContainsKey(member.IntKey))",
+        "intMembers.Add(member.IntKey, (member, item.Type));"
+      ],
+      "kind": "defect",
+      "requirement_part": "The analyzer does not work if SuppressSourceGeneration = true",
+      "would_be_wrong_if": "The 3.1.1 regression was solely an ArgumentException from duplicate keys, and the MsgPack004/015/003 tests fail on the old code.",
+      "question": "Has anyone confirmed the new MsgPack004/015/003 suppressed-type tests fail without this change?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "high severity defect"
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "title": "`continue` skips the rest of the member's checks",
+      "oneliner": "Members with mismatched key kinds now skip formatter-attribute handling and any later member-type collection. This also applies to generated types.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "continue; // The key kind does not match the other members; the diagnostic is reported, so skip this member."
+      ],
+      "kind": "defect",
+      "requirement_part": "",
+      "would_be_wrong_if": "Nothing after the key-registration block in the loop body reports diagnostics or collects nested types.",
+      "question": "Is it acceptable that a mixed-key member no longer gets its member type validated (MsgPack003)?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    }
+  ],
+  "handled": [
+    {
+      "id": "F3",
+      "severity": "low",
+      "title": "Duplicate keys silently keep the first member",
+      "oneliner": "The second member with the same key is dropped from the model. This relies on MsgPack005 being reported elsewhere, which is not in this diff.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "if (!stringMembers.ContainsKey(member.StringKey))"
+      ],
+      "kind": "note",
+      "requirement_part": "",
+      "would_be_wrong_if": "The duplicate-key diagnostic is emitted before this point in code not shown.",
+      "question": "",
+      "evidence": [],
+      "status": "supported",
+      "routed_by": "low impact or no decision needed"
+    },
+    {
+      "id": "F4",
+      "severity": "low",
+      "title": "Execution tests don't exercise the analyzer",
+      "oneliner": "The round-trip test and the null-formatter test check run-time behavior that existed before. They prove nothing about the analyzer bug.",
+      "file": "tests/MessagePack.SourceGenerator.ExecutionTests/SuppressedSourceGenerationTests.cs",
+      "quote": [
+        "Assert.Null(GeneratedMessagePackResolver.Instance.GetFormatter<SuppressedSourceGenerationType>());"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "",
+      "would_be_wrong_if": "",
+      "question": "",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    }
+  ],
+  "dropped": [
+    {
+      "title": "README claims a check that no test covers",
+      "file": "README.md",
+      "dropped_because": "quote not found in diff: ['Types are accessible to the resolver ([MsgPack012](doc/analyzers/MsgPack012.md)).']"
+    }
+  ],
+  "not_checked": [
+    "The test suite was not run (no .NET SDK on the review host).",
+    "Whether the analyzer entry point skips SuppressSourceGeneration types before TypeCollector runs (the likely 3.1.1 regression)",
+    "Where MsgPack005 for duplicate keys is reported, and whether it still fires now that duplicates are skipped",
+    "What code follows the key block in the member loop that `continue` now skips"
+  ],
+  "reviewer": {
+    "duration_s": 26.7,
+    "cost_usd": 0.0663224,
+    "model": "default",
+    "prompt_chars": 13089
+  }
+}

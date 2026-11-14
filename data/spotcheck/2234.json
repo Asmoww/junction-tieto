@@ -1,0 +1,17 @@
+{"case": "2234", "checked_by": "spot-check agent", "results": [
+ {"id": "F1", "title": "No visible change to the suppress-skip path", "verdict": "true",
+  "reason": "Branch base keeps the suppress return at the end; the 3.1.1 early return on master is untouched. The diff only adds continue/ContainsKey guards.",
+  "evidence": "origin/master:src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs:722-727 (early return, regression from v3.1.0..v3.1.1); merge-base 524fd55e TypeCollector.cs:1369 (return at end); head TypeCollector.cs:1383"},
+ {"id": "F2", "title": "Mixed-key member dropped, skipping later checks", "verdict": "true",
+  "reason": "continue skips the CollectCore(item.Type) recursion, which reports MsgPack003 for member types; it is in shared code, so generated types are affected too.",
+  "evidence": "origin/ju26-issue-2234:src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs:1008,1045-1050 (CollectCore), 1148; MsgPack003 reported at 1359"},
+ {"id": "F3", "title": "Duplicate key silently keeps first member", "verdict": "false",
+  "reason": "Not silent: KeysMustBeUnique (MsgPack005) is reported right before each guarded Add, in the same method, in code that already existed.",
+  "evidence": "origin/ju26-issue-2234:src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs:1014-1017,1030-1033,1154-1157,1170-1173"},
+ {"id": "F4", "title": "Run-time round-trip test does not cover the bug", "verdict": "true",
+  "reason": "The execution test only checks dynamic-resolver round trip and that no formatter is generated; it runs no analyzer and checks no diagnostics.",
+  "evidence": "origin/ju26-issue-2234:tests/MessagePack.SourceGenerator.ExecutionTests/SuppressedSourceGenerationTests.cs:20-36"},
+ {"id": "F5", "title": "README section adds policy claims not requested", "verdict": "true",
+  "reason": "The new README section documents analyzer coverage, including the MsgPack011/016/017 exemptions; the issue only reports a bug. The claims match the code, but this is new public docs.",
+  "evidence": "origin/ju26-issue-2234:README.md:1620-1632; REQ-2234.json text"}
+]}

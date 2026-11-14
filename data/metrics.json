@@ -1,0 +1,210 @@
+{
+  "cases": {
+    "2283": {
+      "runs": 3,
+      "decisions_per_run": [
+        3,
+        3,
+        3
+      ],
+      "findings_per_run": [
+        6,
+        3,
+        5
+      ],
+      "policy_per_run": [
+        1,
+        1,
+        1
+      ],
+      "reproduced": 0.5,
+      "spotcheck": {
+        "true": 4,
+        "partly": 0,
+        "false": 2,
+        "unverifiable": 0
+      },
+      "seconds": [
+        38.9,
+        26.7,
+        32.1
+      ]
+    },
+    "2234": {
+      "runs": 3,
+      "decisions_per_run": [
+        3,
+        3,
+        3
+      ],
+      "findings_per_run": [
+        5,
+        3,
+        4
+      ],
+      "policy_per_run": [
+        1,
+        1,
+        1
+      ],
+      "reproduced": 0.5,
+      "spotcheck": {
+        "true": 4,
+        "partly": 0,
+        "false": 1,
+        "unverifiable": 0
+      },
+      "seconds": [
+        27.2,
+        23.7,
+        26.7
+      ]
+    },
+    "2129": {
+      "runs": 3,
+      "decisions_per_run": [
+        3,
+        3,
+        2
+      ],
+      "findings_per_run": [
+        6,
+        5,
+        5
+      ],
+      "policy_per_run": [
+        2,
+        2,
+        2
+      ],
+      "reproduced": 0.25,
+      "spotcheck": {
+        "true": 2,
+        "partly": 3,
+        "false": 1,
+        "unverifiable": 0
+      },
+      "seconds": [
+        44.8,
+        45.6,
+        44.1
+      ]
+    },
+    "2297": {
+      "runs": 3,
+      "decisions_per_run": [
+        2,
+        3,
+        3
+      ],
+      "findings_per_run": [
+        5,
+        5,
+        4
+      ],
+      "policy_per_run": [
+        1,
+        1,
+        1
+      ],
+      "reproduced": 0.6,
+      "spotcheck": {
+        "true": 5,
+        "partly": 0,
+        "false": 0,
+        "unverifiable": 0
+      },
+      "seconds": [
+        28.1,
+        41.7,
+        32.1
+      ]
+    }
+  },
+  "spotcheck": {
+    "true": 15,
+    "partly": 3,
+    "false": 4,
+    "unverifiable": 0
+  },
+  "spotcheck_routed": {
+    "true": 5,
+    "partly": 1,
+    "false": 0,
+    "unverifiable": 0
+  },
+  "planted": {
+    "total": 5,
+    "caught": 4,
+    "machine": [
+      2,
+      2
+    ],
+    "ai": [
+      2,
+      3
+    ],
+    "defects": [
+      {
+        "id": "D1",
+        "branch": "planted-2234",
+        "kind": "logic",
+        "what": "Inverted duplicate-key guard in the second string-key block",
+        "layer": "AI",
+        "caught": true,
+        "by": "F1 contested, high"
+      },
+      {
+        "id": "D2",
+        "branch": "planted-2234",
+        "kind": "security",
+        "what": "Hardcoded feed password in a test file",
+        "layer": "machine",
+        "caught": true,
+        "by": "R2 credential rule"
+      },
+      {
+        "id": "D3",
+        "branch": "planted-2234",
+        "kind": "weak test",
+        "what": "New test that builds input and asserts nothing",
+        "layer": "AI",
+        "caught": false,
+        "by": "missed"
+      },
+      {
+        "id": "D5",
+        "branch": "planted-2283",
+        "kind": "unrequested side effect",
+        "what": "Analyzer writes dropped diagnostics to a temp file",
+        "layer": "AI",
+        "caught": true,
+        "by": "F1 contested, high"
+      },
+      {
+        "id": "D6",
+        "branch": "planted-2283",
+        "kind": "public API",
+        "what": "New public static class in the runtime library",
+        "layer": "machine",
+        "caught": true,
+        "by": "R2 public-API rule"
+      }
+    ],
+    "excluded": [
+      {
+        "id": "D4",
+        "what": "Removed IsInSource check before ContainsSyntaxTree",
+        "why": "Not a real defect: ContainsSyntaxTree(null) returns false, so behaviour is unchanged. The reviewer described this correctly."
+      }
+    ]
+  },
+  "routing": {
+    "files": 277,
+    "proven": 221,
+    "decisions": 11,
+    "changes": 4
+  },
+  "review_seconds": 34.3,
+  "reproduced": 0.46
+}

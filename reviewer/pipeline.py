@@ -26,6 +26,16 @@ PUBLIC_API_EXCLUDE = ["*SourceGenerator*", "*Analyzer*"]
 PUBLIC_API = re.compile(r"^\s*public\s+(?:(?:sealed|static|abstract|partial|readonly|ref)\s+)*(class|interface|struct|record|enum)\s+(\w+)")
 
 
+# Credentials in added lines. Matches are redacted before they reach the case file or the AI.
+SECRET = re.compile(
+    r"""(?ix)(?:password|passwd|pwd|secret|api[_-]?key|access[_-]?key|token|credential)\w*\s*[:=]\s*["']([^"'\s]{6,})["']"""
+    r"|(AKIA[0-9A-Z]{16})|(gh[pousr]_[A-Za-z0-9]{30,})|(xox[abpr]-[A-Za-z0-9-]{10,})|(-----BEGIN [A-Z ]*PRIVATE KEY-----)")
+
+
+def redact(line):
+    return SECRET.sub(lambda m: m.group(0).replace(next(g for g in m.groups() if g), "[REDACTED]"), line)
+
+
 def git(repo, *args):
     return subprocess.run(["git", "-C", repo, *args], check=True, capture_output=True, text=True).stdout
 
@@ -105,6 +115,11 @@ def policy_hits(files):
                              "why": "New public types become a promise to every user of the package and cannot be removed without a breaking release.",
                              "question": f"Add {', '.join(new)} to the public API?",
                              "added": [l for l in f.added if PUBLIC_API.match(l)][:12], "removed": []})
+        leaked = [redact(l) for l in f.added if SECRET.search(l)]
+        if leaked:
+            hits.append({"rule": "secret", "file": f.path,
+                         "why": "A credential in source is exposed to everyone who can read the repository, and stays in its history.",
+                         "question": "Remove the credential and rotate it?", "added": leaked[:4], "removed": []})
     return hits
 
 

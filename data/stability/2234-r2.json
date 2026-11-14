@@ -1,0 +1,115 @@
+{
+  "id": "2234",
+  "requirement": {
+    "id": "REQ-2234",
+    "title": "The analyzer does not work if SuppressSourceGeneration = true",
+    "source": "https://github.com/MessagePack-CSharp/MessagePack-CSharp/issues/2234",
+    "text": "#### Bug description\n\nThe analyzer does not work if SuppressSourceGeneration = true. This has happened since version 3.1.1. It still worked in 3.1.0.\n\n"
+  },
+  "branch": "ju26-issue-2234",
+  "base_commit": "524fd55e14ff38875c5f24f4dd3b4ea744f4d883",
+  "head_commit": "9007cee1163c4a274fd60c3cc20c21ae63622786",
+  "story": "Stops the type collector from crashing on duplicate or mixed keys by skipping those members, and adds analyzer tests, execution tests and README docs for SuppressSourceGeneration types.",
+  "stats": {
+    "files": 5,
+    "added": 264,
+    "removed": 6,
+    "files_proven": 0,
+    "decisions": 3,
+    "findings_kept": 3,
+    "findings_dropped": 1
+  },
+  "proof": null,
+  "decisions": [
+    {
+      "id": "R1",
+      "status": "refused",
+      "severity": "high",
+      "title": "Dependency change in Directory.Packages.props",
+      "oneliner": "Dependency and toolchain versions decide which users can build and run the package.",
+      "file": "Directory.Packages.props",
+      "quote": [
+        "-     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.3.0</MicrosoftCodeAnalysisVersion>",
+        "-     <PackageVersion Include=\"PolySharp\" Version=\"1.14.1\" />",
+        "+     <MicrosoftCodeAnalysisVersion Condition=\"'$(IsAnalyzerProject)'=='true'\">4.12.0</MicrosoftCodeAnalysisVersion>",
+        "+     <PackageVersion Include=\"PolySharp\" Version=\"1.15.0\" />"
+      ],
+      "question": "Accept this dependency or toolchain change?",
+      "routed_by": "policy rule 'dependency': the reviewer may not decide this",
+      "seen_in": []
+    },
+    {
+      "id": "F1",
+      "severity": "high",
+      "title": "Fix doesn't touch suppression handling",
+      "oneliner": "Only the duplicate-key Add crash is fixed. Nothing in the diff changes how SuppressSourceGeneration types are routed through the analyzer.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "if (!intMembers.ContainsKey(member.IntKey))",
+        "intMembers.Add(member.IntKey, (member, item.Type));"
+      ],
+      "kind": "note",
+      "requirement_part": "The analyzer does not work if SuppressSourceGeneration = true",
+      "would_be_wrong_if": "The 3.1.1 regression was caused by the Dictionary.Add exception aborting analysis. If 3.1.1 instead skips suppressed types early, this diff does not fix the bug.",
+      "question": "Did you confirm the 3.1.1 regression is the Dictionary.Add exception, for example by running MemberWithoutKeyIsReported against unpatched code?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "high severity note"
+    },
+    {
+      "id": "F2",
+      "severity": "medium",
+      "title": "Duplicate/mixed-key members silently dropped from model",
+      "oneliner": "Members with a duplicate or mismatched key are skipped. Later checks on them (MsgPack003, formatter attribute) no longer run, and this also applies to generated types.",
+      "file": "src/MessagePack.SourceGenerator/CodeAnalysis/TypeCollector.cs",
+      "quote": [
+        "continue; // The key kind does not match the other members; the diagnostic is reported, so skip this member."
+      ],
+      "kind": "defect",
+      "requirement_part": "",
+      "would_be_wrong_if": "MsgPack005 is error severity, so generation is blocked anyway and the extra checks don't matter.",
+      "question": "Is it acceptable that a member with a bad key no longer gets its member-type diagnostics?",
+      "evidence": [],
+      "status": "contested",
+      "routed_by": "medium severity defect"
+    }
+  ],
+  "handled": [
+    {
+      "id": "F3",
+      "severity": "low",
+      "title": "Execution tests don't exercise the analyzer",
+      "oneliner": "The round-trip test only checks run-time dynamic serialization. That already worked, and the test says nothing about the analyzer bug.",
+      "file": "tests/MessagePack.SourceGenerator.ExecutionTests/SuppressedSourceGenerationTests.cs",
+      "quote": [
+        "public void SuppressedTypeRoundTripsThroughDynamicResolver()"
+      ],
+      "kind": "weak-test",
+      "requirement_part": "The analyzer does not work",
+      "would_be_wrong_if": "",
+      "question": "",
+      "evidence": [],
+      "status": "weak-evidence",
+      "routed_by": "low impact or no decision needed"
+    }
+  ],
+  "dropped": [
+    {
+      "title": "README claims MsgPack012 checked, untested",
+      "file": "README.md",
+      "dropped_because": "quote not found in diff: ['Types are accessible to the resolver ([MsgPack012](doc/analyzers/MsgPack012.md)).']"
+    }
+  ],
+  "not_checked": [
+    "The test suite was not run (no .NET SDK on the review host).",
+    "Where MsgPack005 for duplicate keys is reported (not in the diff), so I couldn't confirm the skipped duplicates still get a diagnostic",
+    "Whether the analyzer filters out SuppressSourceGeneration types before TypeCollector runs",
+    "What the policy-gated Directory.Packages.props change affects"
+  ],
+  "reviewer": {
+    "duration_s": 23.7,
+    "cost_usd": 0.1211544,
+    "model": "default",
+    "prompt_chars": 13089
+  }
+}

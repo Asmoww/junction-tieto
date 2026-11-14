@@ -3,7 +3,7 @@ import json
 import subprocess
 import time
 
-from .pipeline import norm
+from .pipeline import norm, redact
 
 SYSTEM = """You review a code change written by an AI coding agent. A named human engineer will sign the change; \
 your job is to give them advice with evidence, never approval.
@@ -57,7 +57,8 @@ def build_prompt(req, files, proof, policy):
     for f in files:
         if f.path in proven or f.path in gated:
             continue
-        t = f.text if len(f.text) <= MAX_FILE_CHARS else f.text[:MAX_FILE_CHARS] + "\n[... truncated ...]\n"
+        text = "\n".join(redact(l) for l in f.text.splitlines())
+        t = text if len(text) <= MAX_FILE_CHARS else text[:MAX_FILE_CHARS] + "\n[... truncated ...]\n"
         if total + len(t) > MAX_TOTAL_CHARS:
             parts.append(f"[omitted for size: {f.path}]\n")
             continue
@@ -91,7 +92,7 @@ def verify(result, files):
         if not fd:
             dropped.append({**f, "dropped_because": "named file is not in the diff"})
             continue
-        lines = {norm(l[1:] if l[:1] in "+- " else l) for l in fd.text.splitlines()}
+        lines = {norm(redact(l[1:] if l[:1] in "+- " else l)) for l in fd.text.splitlines()}
         quote = [norm(q.lstrip("+- ")) for q in f.get("quote", []) if norm(q)]
         missing = [q for q in quote if q not in lines]
         if not quote or missing:

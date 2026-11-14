@@ -28,3 +28,18 @@
 
 - **Run-to-run variance.** On 2297 the first run raised a duplicate-attribute risk (CS0579) that the second run did not. Severity also shifted, which changed the decision count from 3 to 2. To measure next.
 - **The AI found the false premise on its own** but cannot prove it without a tool; the machine probe (reference-assembly check) supplies the proof.
+
+## 2026-11-14, measurement
+
+- **Secret scanner added to the policy gate.** Credentials in added lines are routed to the owner and redacted before they reach the case file or the AI.
+- **Spot-check of all 22 AI findings** by a second review pass with full repository access: 15 true, 3 partly true, 4 false. All 6 findings routed to an owner were real; the false ones were all in "handled".
+- **Planted defects:** 4 of 5 caught. Machine rules 2/2 (credential, public API), AI 2/3 (inverted guard, analyzer file I/O). Missed: a new test that asserts nothing. A sixth plant turned out harmless and was excluded; the AI described its behaviour correctly.
+- **Stability:** 2 repeat runs per change. Decisions per change stay at 2–3; 46% of individual findings reappear by our strict match (same file and quoted line).
+- **Game metric reframed** from "problems you didn't know about" (true by construction) to "problems pointed out to you": 0 of 2 on the raw diff, 2 of 2 with the case file.
+
+## Failure modes seen (measurement)
+
+- **False findings with real quotes** (4 of 22). Quote-or-drop does not stop wrong reasoning.
+- **Weak-test blind spot.** The planted empty test went unnoticed.
+- **Stale base.** 2283 and 2234 branch from an old commit, so a crash site live on master looks fixed in the diff.
+- **Our own quick check was wrong.** A 2283 finding we called false was shown true by the full spot-check.

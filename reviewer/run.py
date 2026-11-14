@@ -11,7 +11,7 @@ from pathlib import Path
 from . import ai
 from .pipeline import cross_branch, git, policy_hits, prove_generated, read_diff
 
-RULE_NAMES = {"dependency": "Dependency", "build": "Build", "security": "Security", "public-api": "Public API"}
+RULE_NAMES = {"dependency": "Dependency", "build": "Build", "security": "Security", "public-api": "Public API", "secret": "Credential"}
 NOT_CHECKED_ALWAYS = ["The test suite was not run (no .NET SDK on the review host)."]
 
 
